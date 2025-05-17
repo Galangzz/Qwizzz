@@ -1,5 +1,6 @@
 package com.example.qwizz.ui.auth
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ import com.example.qwizz.Screen
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.qwizz.data.control.CredentialsManager
 import com.example.qwizz.viewmodel.auth.AuthViewModel
 
 
@@ -51,14 +53,20 @@ fun LoginScreen(
     navController: NavController,
     authViewModel: AuthViewModel = viewModel()
 ){
+    val credentialsManager = CredentialsManager(LocalContext.current)
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var checked by remember { mutableStateOf(false) }
     var passwordVisible by remember{ mutableStateOf(false) }
-
     var emailError by remember{ mutableStateOf(false) }
+    var isCheckboxChecked by remember { mutableStateOf(false) }
+
 
     val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
+
+    var rememberMeChecked by remember { mutableStateOf(sharedPreferences.getBoolean("rememberMe", false)) }
+
 
     val pressStart2P = FontFamily(
         Font(R.font.p2p_regular, FontWeight.Normal)
@@ -198,9 +206,19 @@ fun LoginScreen(
                             .padding(horizontal = 5.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ){
+                        sharedPreferences.edit().putBoolean("rememberMe", rememberMeChecked).apply()
+                        isCheckboxChecked = false
                         Checkbox(
-                            checked = checked,
-                            onCheckedChange = {checked = it}
+                            checked = rememberMeChecked,
+                            onCheckedChange = {isChecked ->
+                                rememberMeChecked = isChecked
+                                sharedPreferences.edit().putBoolean("rememberMe", isChecked).apply()
+                                if(!isChecked){
+                                    isCheckboxChecked = false
+                                }else{
+                                    isCheckboxChecked = true
+                                }
+                            }
                         )
                         Text(
                             text = "Remember Me",
@@ -225,7 +243,12 @@ fun LoginScreen(
                             authViewModel.loginUser(email, password){ success, message ->
                                 if(success){
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                    navController.navigate(Screen.mainMenu.route)
+                                    navController.navigate(Screen.mainMenu.route){
+                                        popUpTo(0){
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = true
+                                    }
                                 }
                                 else{
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()

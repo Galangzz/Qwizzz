@@ -1,5 +1,6 @@
 package com.example.qwizz.ui.menu
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,6 +63,9 @@ fun StatsMenu(
     val totalSoalDikerjakan: Int = 0
     val rataRataNilai: Int = 0
     val jawabanBenar: Int = 0
+
+    val user = FirebaseAuth.getInstance().currentUser
+    Log.d("StatsMenu", "User email: ${user?.email}")
 
     Surface (
         modifier = Modifier
@@ -187,7 +191,13 @@ fun StatsMenu(
                     Button(
                         onClick = {
                             authViewModel.logoutUser()
-                            navController.navigate(Screen.loginScreen.route)
+                            navController.navigate(Screen.loginScreen.route){
+                                popUpTo(0) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+
+                            }
                         },
                         modifier = Modifier
                             .width(100.dp)

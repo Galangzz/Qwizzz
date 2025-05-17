@@ -42,10 +42,13 @@ import androidx.navigation.NavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
 import android.widget.Toast
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qwizz.data.control.CredentialsManager
 import com.example.qwizz.viewmodel.auth.AuthViewModel
+import java.lang.Compiler.enable
 
 
 @Composable
@@ -60,6 +63,8 @@ fun LoginScreen(
     var passwordVisible by remember{ mutableStateOf(false) }
     var emailError by remember{ mutableStateOf(false) }
     var isCheckboxChecked by remember { mutableStateOf(false) }
+
+    var isLoading by remember { mutableStateOf(false)}
 
 
     val context = LocalContext.current
@@ -230,18 +235,23 @@ fun LoginScreen(
                             .padding(5.dp)
                         ,
                         onClick = {
+                            isLoading = true
                             emailError = false
+
                             if(email.isEmpty()){
                                 Toast.makeText(context, "Email tidak boleh kosong", Toast.LENGTH_SHORT).show()
                                 emailError = true
+                                isLoading = false
                                 return@Button
                             }
                             if(password.isEmpty()){
                                 Toast.makeText(context, "Password tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                                isLoading = false
                                 return@Button
                             }
                             authViewModel.loginUser(email, password){ success, message ->
                                 if(success){
+                                    isLoading = false
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                     navController.navigate(Screen.mainMenu.route){
                                         popUpTo(0){
@@ -251,19 +261,30 @@ fun LoginScreen(
                                     }
                                 }
                                 else{
+                                    isLoading = false
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                 }
 
                             }
+
                         },
+                        enabled = !isLoading,
 
                         ) {
-                        Text(
-                            text = "Login",
-                            color = colorResource(R.color.white),
-                            fontFamily = roboto,
-                            fontWeight = FontWeight.ExtraBold
-                        )
+                        if(isLoading){
+                            CircularProgressIndicator(
+                                color = colorResource(R.color.white),
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }else{
+                            Text(
+                                text = "Login",
+                                color = colorResource(R.color.white),
+                                fontFamily = roboto,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
                     }
 
                     Row (

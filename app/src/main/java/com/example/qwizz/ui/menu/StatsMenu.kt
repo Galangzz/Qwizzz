@@ -17,10 +17,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
@@ -49,6 +54,7 @@ fun StatsMenu(
     navController: NavController,
     authViewModel: AuthViewModel= viewModel()
 ){
+    var isLoading by remember { mutableStateOf(false) }
 
     val draw = painterResource(R.drawable.bg)
     val back_icon = painterResource(R.drawable.back_icon)
@@ -190,7 +196,17 @@ fun StatsMenu(
 
                     Button(
                         onClick = {
-                            authViewModel.logoutUser()
+                            isLoading = true
+                            authViewModel.logoutUser(){ success, message ->
+                                if (success) {
+                                    Log.d("StatsMenu", "Logout success")
+                                    isLoading = false
+                                } else {
+                                    Log.d("StatsMenu", "Logout failed: $message")
+                                    isLoading = false
+                                    return@logoutUser
+                                }
+                            }
                             navController.navigate(Screen.loginScreen.route){
                                 popUpTo(0) {
                                     inclusive = true
@@ -198,11 +214,22 @@ fun StatsMenu(
                                 launchSingleTop = true
 
                             }
+                            Log.d("StatsMenu", "Logout button clicked")
+
                         },
                         modifier = Modifier
-                            .width(100.dp)
+                            .width(100.dp),
+                        enabled = !isLoading
                     ) {
-                        Text(text = "Logout")
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = colorResource(R.color.white),
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(text = "Logout")
+                        }
                     }
                 }
 

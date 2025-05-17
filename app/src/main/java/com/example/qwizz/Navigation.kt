@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.qwizz.ui.auth.LoginScreen
 import com.example.qwizz.ui.auth.RegisterScreen
+import com.example.qwizz.ui.makeqwizz.SelectTopic
 import com.example.qwizz.ui.menu.MainMenu
 import com.example.qwizz.ui.menu.StatsMenu
 import com.google.firebase.auth.FirebaseAuth
@@ -19,7 +20,6 @@ fun Navigation(){
     val user = FirebaseAuth.getInstance().currentUser
     val startDestination = if (user != null) Screen.mainMenu.route else Screen.loginScreen.route
 
-//    val prefs = getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.loginScreen.route) {
@@ -33,6 +33,9 @@ fun Navigation(){
         }
         composable(Screen.StatsMenu.route){
             StatsMenu(navController = navController)
+        }
+        composable(Screen.SelectTopic.route) {
+            SelectTopic(navController = navController)
         }
 
     }

@@ -120,7 +120,7 @@ class AuthViewModel: ViewModel() {
 
     }
 
-    fun logoutUser() {
+    fun logoutUser(onResult: (success: Boolean, message: String?) -> Unit) {
         viewModelScope.launch {
             isLoading.value = true
             try {
@@ -129,9 +129,13 @@ class AuthViewModel: ViewModel() {
                 _currentUser.value = null
                 _userEmail.value = ""
                 Log.d(ContentValues.TAG, "Logout success")
+                onResult(true, "Logout success")
             } catch (e: Exception) {
                 Log.e(ContentValues.TAG, "Logout failed: ${e.message}")
                 _authState.value = AuthState.Error(e.message ?: "Unknown error")
+                onResult(false, e.message)
+            } finally {
+                isLoading.value = false
             }
         }
     }

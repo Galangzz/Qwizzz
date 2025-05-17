@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -64,6 +66,7 @@ fun RegisterScreen(
     var usernameError by remember {mutableStateOf(false)}
     var emailError by remember {mutableStateOf(false)}
     var passwordError by remember {mutableStateOf(false)}
+    var isLoading by remember { mutableStateOf(false)}
 
     val context = LocalContext.current
 
@@ -230,6 +233,7 @@ fun RegisterScreen(
                             .padding(5.dp)
                         ,
                         onClick = {
+                            isLoading = true
                             registerFailed = false
                             usernameError = false
                             emailError = false
@@ -239,12 +243,14 @@ fun RegisterScreen(
                                 Toast.makeText(context, "Username tidak boleh kosong", Toast.LENGTH_SHORT).show()
                                 usernameError = true
                                 registerFailed = true
+                                isLoading = false
                                 return@Button
                             }
                             if(email.isEmpty()){
                                 Toast.makeText(context, "Email tidak boleh kosong", Toast.LENGTH_SHORT).show()
                                 emailError = true
                                 registerFailed = true
+                                isLoading = false
                                 return@Button
                             }
                             if(password.isEmpty()) {
@@ -255,12 +261,14 @@ fun RegisterScreen(
                                 ).show()
                                 passwordError = true
                                 registerFailed = true
+                                isLoading = false
                                 return@Button
                             }
                             if(password.length < 6){
                                 Toast.makeText(context, "Password minimal 6 karakter", Toast.LENGTH_SHORT).show()
                                 passwordError = true
                                 registerFailed = true
+                                isLoading = false
                                 return@Button
                             }
 
@@ -268,27 +276,43 @@ fun RegisterScreen(
 
                             authViewModel.registerUser(userName, email, password){ success, message ->
                                 if(success){
+                                    Log.d("RegisterScreen", "Logout: ${auth.currentUser}")
+                                    auth.signOut()
+                                    Log.d("RegisterScreen", "Logout: ${auth.currentUser}")
                                     Toast.makeText(context, "Register Success", Toast.LENGTH_SHORT).show()
                                     navController.navigate(Screen.loginScreen.route){
                                         popUpTo(Screen.loginScreen.route){
                                             inclusive = true
                                         }
+                                        launchSingleTop = true
                                     }
+                                    isLoading = false
                                     return@registerUser
                                 }
                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show().toString()
                                 registerFailed = true
+                                isLoading = false
+
                             }
 
                         },
+                        enabled = !isLoading
 
                         ) {
-                        Text(
-                            text = "Register",
-                            color = colorResource(R.color.white),
-                            fontFamily = roboto,
-                            fontWeight = FontWeight.ExtraBold
-                        )
+                        if(isLoading){
+                            CircularProgressIndicator(
+                                color = colorResource(R.color.white),
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }else{
+                            Text(
+                                text = "Register",
+                                color = colorResource(R.color.white),
+                                fontFamily = roboto,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
                     }
                     Row (
                         verticalAlignment = Alignment.CenterVertically

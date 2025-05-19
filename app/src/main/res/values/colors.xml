@@ -16,6 +16,11 @@
     <color name="blue_head_up">#94C4F3</color>
     <color name="blue_box">#4B92D1</color>
 
+    <color name="box1">#EB6666</color>
+    <color name="box2">#FF9500</color>
+    <color name="box3">#34C759</color>"
+    <color name="box4">#32ADE6</color>
+
 
 
 </resources>

@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.State
+import com.example.qwizz.ui.makeqwizz.InputQuestion
 import com.example.qwizz.ui.menu.StatsMenu
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Navigation()
+//            InputQuestion()
         }
     }
 }

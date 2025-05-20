@@ -1,9 +1,9 @@
 package com.example.qwizz.data.model
 
 data class Qwizzz(
-    val email: String = "",
-    val username: String = "",
+    val id: String = "",
     val topic: String = "",
+    val title: String = "",
     val question: List<QuizQuestion> = emptyList()
 )
 

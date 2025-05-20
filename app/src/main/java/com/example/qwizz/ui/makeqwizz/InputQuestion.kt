@@ -2,19 +2,16 @@ package com.example.qwizz.ui.makeqwizz
 
 import android.util.Log
 import android.widget.Toast
-import androidx.collection.intIntMapOf
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.ScrollableDefaults
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,17 +25,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,11 +36,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.ModifierLocalReadScope
-import androidx.compose.ui.modifier.modifierLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -59,32 +47,49 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
+import com.example.qwizz.component.AlertPerubahan
 import com.example.qwizz.component.InputAnswerComponent
 import com.example.qwizz.component.TitleComponent
 import com.example.qwizz.data.model.AnswerOption
 import com.example.qwizz.data.model.QuizQuestion
 import com.example.qwizz.viewmodel.makeqwizz.MakeQwizzzViewModel
-import com.google.common.collect.Multimaps.index
 
-@Preview (showBackground = true)
+//@Preview (showBackground = true)
 @Composable
-fun InputQuestion(){
+fun InputQuestion(
+    navController: NavController,
+    topic : String,
+    title : String,
+    qwizzViewModel: MakeQwizzzViewModel = viewModel()
+){
+    val topic = topic
+    val title = title
+    Log.d("InputQuestion", "Topic: $topic, Title: $title")
     val roboto = FontFamily(
         Font(R.font.roboto_bold, FontWeight.ExtraBold),
         Font(R.font.roboto_ligh, FontWeight.ExtraLight),
         Font(R.font.roboto_reguler, FontWeight.Normal)
     )
+    val p2p = FontFamily(
+        Font(R.font.p2p_regular, FontWeight.Normal),
+    )
+
+
 
     val context = LocalContext.current
 
     val draw = painterResource(R.drawable.bg)
     val back_icon = painterResource(R.drawable.back_icon)
+
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogBack by remember { mutableStateOf(false) }
+    var dialogSelesai by remember { mutableStateOf(false) }
 
     var question by remember { mutableStateOf("") }
     var answer1 by remember { mutableStateOf("") }
@@ -101,6 +106,9 @@ fun InputQuestion(){
 
     var allQuizQuestion = remember { mutableListOf<QuizQuestion>() }
     var currentEditingIndex by remember { mutableIntStateOf(-1) }
+
+
+
 
     fun loadQuestionDataIntoUI(index:Int){
         if(index >= 0 && index < allQuizQuestion.size && allQuizQuestion[index].questionText.isNotEmpty()){
@@ -133,6 +141,26 @@ fun InputQuestion(){
         isAnswer4Correct = false
         countCheck = 0
     }
+
+    if (showDialog) {
+        AlertPerubahan(
+            title = "Peringatan",
+            text = "Perubahan belum disimpan, apakah anda yakin ingin keluar?",
+            onDismiss = {
+                showDialog = false // Dismiss the dialog
+            },
+            onConfirm = {
+                showDialog = false // Dismiss the dialog
+                allQuizQuestion.clear()
+                currentEditingIndex = -1
+                resetUIForNewQuestion()
+                Log.d("InputQuestion", "All questions cleared")
+                navController.navigate(Screen.SelectTopic.route)
+            }
+        )
+    }
+
+
 
     Surface(
         modifier = Modifier
@@ -173,7 +201,15 @@ fun InputQuestion(){
                         modifier = Modifier
                             .size(22.dp)
                             .clickable {
-//                                navController.navigate(Screen.mainMenu.route)
+                                if (allQuizQuestion.isEmpty() && question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty() && countCheck == 0){
+                                    navController.navigate(Screen.SelectTopic.route)
+                                }else{
+                                    // Alert
+                                    Log.d("InputQuestion", "Alert")
+                                    showDialog = true
+                                    dialogBack = true
+                                    dialogSelesai = false
+                                }
                             }
                     )
                 }
@@ -186,10 +222,36 @@ fun InputQuestion(){
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    Row (
+                        modifier = Modifier
+                            .width(320.dp)
+                            .padding(vertical = 20.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text(
+                            text = title,
+                            fontFamily = p2p,
+                            color = colorResource(R.color.white),
+                            textAlign = TextAlign.Justify,
+                            modifier = Modifier,
+                            style = TextStyle(
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = colorResource(R.color.white),
+                                shadow = Shadow(
+                                    color = colorResource(R.color.black_shadow),
+                                    offset = Offset(5f, 5f),
+                                    blurRadius = 0.1f,
+                                )
+                            )
+                        )
+                    }
 
                     Card (
                         modifier = Modifier
-                            .width(320.dp),
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = colorResource(R.color.blue_box),
                         ),
@@ -212,7 +274,9 @@ fun InputQuestion(){
                                     .padding(10.dp)
                                     .height(180.dp)
                                     .background(
-                                        color = if (question.isEmpty()) colorResource(R.color.black_shadow) else colorResource(R.color.blue_head_up),
+                                        color = if (question.isEmpty()) colorResource(R.color.black_shadow) else colorResource(
+                                            R.color.blue_head_up
+                                        ),
                                         shape = RoundedCornerShape(18.dp)
                                     ),
                                 decorationBox = { innerTextField ->
@@ -347,7 +411,7 @@ fun InputQuestion(){
                                 //Button Selesai
                                 Button(
                                     modifier = Modifier
-                                        .width(110.dp)
+                                        .width(100.dp)
                                     ,
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = colorResource(R.color.purple_200),
@@ -355,9 +419,90 @@ fun InputQuestion(){
 
                                     ),
                                     onClick = {
-                                        //DO something
+                                        Log.d("InputQuestion", "Button Selesai Clicked")
+                                        var nextIndex = if (currentEditingIndex == -1) 0 else currentEditingIndex + 1
+                                        if (nextIndex >= allQuizQuestion.size){
+                                            if ((question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty() )&& countCheck == 0){
+                                                qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
+                                                        success, message ->
+                                                    if (success){
+                                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                        navController.navigate(Screen.SelectTopic.route){
+                                                            popUpTo(Screen.SelectTopic.route){
+                                                                inclusive = true
+                                                            }
+                                                            launchSingleTop = true
+                                                        }
+                                                    }else{
+                                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                        Log.d("InputQuestion", "Error: $message")
+                                                    }
+                                                }
+                                            }else{
+                                                if((question.isNotEmpty() || answer1.isNotEmpty() || answer2.isNotEmpty() || answer3.isNotEmpty() || answer4.isNotEmpty()) && countCheck == 0 ){
+                                                    Log.d("InputQuestion", "Semua pertanyaan harus diisi")
+                                                    Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
+                                                    return@Button
+                                                }else{
+                                                    Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
 
-                                    }
+                                                    // add db
+                                                    qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
+                                                            success, message ->
+                                                        if (success){
+                                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                            navController.navigate(Screen.SelectTopic.route){
+                                                                popUpTo(Screen.SelectTopic.route){
+                                                                    inclusive = true
+                                                                }
+                                                                launchSingleTop = true
+                                                            }
+                                                        }else{
+                                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                            Log.d("InputQuestion", "Error: $message")
+                                                        }
+                                                    }
+                                                }
+
+                                            }
+                                        } else {
+                                            val updatedQuestion = QuizQuestion(
+                                                questionText = question,
+                                                options = listOf(
+                                                    AnswerOption(answer1, isAnswer1Correct),
+                                                    AnswerOption(answer2, isAnswer2Correct),
+                                                    AnswerOption(answer3, isAnswer3Correct),
+                                                    AnswerOption(answer4, isAnswer4Correct)
+                                                )
+                                            )
+                                            Log.d("InputQuestion", "Attempted to add question")
+                                            allQuizQuestion[nextIndex] = updatedQuestion
+
+                                            qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
+                                                    success, message ->
+                                                if (success){
+                                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                    navController.navigate(Screen.SelectTopic.route){
+                                                        popUpTo(Screen.SelectTopic.route){
+                                                            inclusive = true
+                                                        }
+                                                        launchSingleTop = true
+                                                    }
+                                                }else{
+                                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                    Log.d("InputQuestion", "Error: $message")
+                                                }
+                                            }
+
+                                        }
+
+
+
+
+                                        ////////
+
+                                    },
+                                    enabled = allQuizQuestion.isNotEmpty()
                                 ){
                                     Text(
                                         text = "Selesai",
@@ -462,6 +607,18 @@ fun InputQuestion(){
             }
 
 
+        }
+
+    }
+
+    BackHandler(enabled = true) {
+        if (allQuizQuestion.isEmpty() && question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty() && countCheck == 0) {
+            Log.d("InputQuestion", "Back pressed")
+            showDialog = false
+            navController.navigate(Screen.SelectTopic.route)
+        } else {
+            showDialog = true
+            dialogBack = true
 
         }
     }

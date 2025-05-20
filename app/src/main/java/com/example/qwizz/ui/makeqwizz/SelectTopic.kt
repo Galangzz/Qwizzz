@@ -85,8 +85,14 @@ fun SelectTopic(
                         title = ""
                         return@InputTitleQwiz
                     }
-                    Log.d("SelectTopic", "Title: $title")
-//                navController.navigate(Screen.createQwiz.route)
+                    Log.d("SelectTopic", "Title: $title, Topic: $topic")
+                navController.navigate(Screen.inputQuestion.withArgs(topic, title)){
+                    popUpTo(0){
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+
                     showDialog = false
 
                 }else{

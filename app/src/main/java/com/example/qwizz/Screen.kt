@@ -5,8 +5,15 @@ sealed  class Screen (val route: String) {
     object registerScreen : Screen("register_screen")
     object mainMenu : Screen("main_menu")
     object StatsMenu : Screen("stats_menu")
-    object MakeQwizz : Screen("make_qwizz")
+    object inputQuestion : Screen("input_question")
     object SelectTopic : Screen("select_topic")
 
-
+    fun withArgs(vararg args: String): String {
+        return buildString {
+            append(route)
+            args.forEach { arg ->
+                append("/$arg")
+            }
+        }
+    }
 }

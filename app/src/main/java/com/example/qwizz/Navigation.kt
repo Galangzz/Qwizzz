@@ -3,11 +3,14 @@ package com.example.qwizz
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHost
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.qwizz.ui.auth.LoginScreen
 import com.example.qwizz.ui.auth.RegisterScreen
+import com.example.qwizz.ui.makeqwizz.InputQuestion
 import com.example.qwizz.ui.makeqwizz.SelectTopic
 import com.example.qwizz.ui.menu.MainMenu
 import com.example.qwizz.ui.menu.StatsMenu
@@ -36,6 +39,25 @@ fun Navigation(){
         }
         composable(Screen.SelectTopic.route) {
             SelectTopic(navController = navController)
+        }
+        composable(
+            route = Screen.inputQuestion.route + "/{topic}/{title}",
+            arguments = listOf(
+                navArgument("topic") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                                     },
+                navArgument("title") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                }
+            )
+        ) { backStackEntry ->
+            val topic = backStackEntry.arguments?.getString("topic")
+            val title = backStackEntry.arguments?.getString("title")
+            InputQuestion(navController = navController, topic = topic.toString(), title = title.toString())
         }
 
     }

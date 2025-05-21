@@ -61,6 +61,7 @@ import com.example.qwizz.data.model.QuizQuestion
 import com.example.qwizz.viewmodel.makeqwizz.MakeQwizzzViewModel
 
 //@Preview (showBackground = true)
+
 @Composable
 fun InputQuestion(
     navController: NavController,
@@ -161,6 +162,121 @@ fun InputQuestion(
     }
 
 
+    fun checkBackEmpty(){
+        if (allQuizQuestion.isEmpty() && question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty() && countCheck == 0){
+            navController.navigate(Screen.SelectTopic.route)
+        }else{
+            Log.d("InputQuestion", "Alert")
+            showDialog = true
+            dialogBack = true
+            dialogSelesai = false
+        }
+    }
+
+    fun prevQuestion(){
+        Log.d("InputQuestion", "Prev Question")
+        if(currentEditingIndex >= 0){
+            loadQuestionDataIntoUI(currentEditingIndex)
+            countCheck = if (isAnswer1Correct || isAnswer2Correct || isAnswer3Correct || isAnswer4Correct) 1 else 0
+            currentEditingIndex--
+            Log.d("InputQuestion", "Current Editing Index: $currentEditingIndex")
+        }
+
+    }
+
+    fun saveQuestion(){
+        Log.d("InputQuestion", "Save Question")
+        qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
+                success, message ->
+            if (success){
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                navController.navigate(Screen.SelectTopic.route){
+                    popUpTo(Screen.SelectTopic.route){
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }else{
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                Log.d("InputQuestion", "Error: $message")
+
+            }
+        }
+    }
+
+    fun updateQuestion(nextIndex: Int){
+        Log.d("InputQuestion", "Update Question")
+        val updatedQuestion = QuizQuestion(
+            questionText = question,
+            options = listOf(
+                AnswerOption(answer1, isAnswer1Correct),
+                AnswerOption(answer2, isAnswer2Correct),
+                AnswerOption(answer3, isAnswer3Correct),
+                AnswerOption(answer4, isAnswer4Correct)
+            )
+        )
+        Log.d("InputQuestion", "Attempted to add question")
+        allQuizQuestion[nextIndex] = updatedQuestion
+        Log.d("InputQuestion", "Question updated successfully")
+    }
+
+    fun addQuestion(){
+        Log.d("InputQuestion", "Add Question")
+        val updatedQuestion = QuizQuestion(
+            questionText = question,
+            options = listOf(
+                AnswerOption(answer1, isAnswer1Correct),
+                AnswerOption(answer2, isAnswer2Correct),
+                AnswerOption(answer3, isAnswer3Correct),
+                AnswerOption(answer4, isAnswer4Correct)
+            )
+        )
+        Log.d("InputQuestion", "Attempted to add question")
+        allQuizQuestion.add(updatedQuestion)
+        Log.d("InputQuestion", "Question added successfully")
+    }
+
+
+    fun selesaiButton(){
+        Log.d("InputQuestion", "Selesai Button")
+        val isAllFieldEmpty = question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty()
+        val isAnyFieldEmpty = question.isEmpty() || answer1.isEmpty() || answer2.isEmpty() || answer3.isEmpty() || answer4.isEmpty()
+
+        val nextIndex = if (currentEditingIndex == -1) 0 else currentEditingIndex + 1
+
+        if (nextIndex > allQuizQuestion.size){
+            if (isAllFieldEmpty && countCheck == 0){
+                saveQuestion()
+            }else{
+                if(isAnyFieldEmpty && countCheck == 0 ){
+                    Log.d("InputQuestion", "Semua pertanyaan harus diisi")
+                    Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
+                }else{
+                    Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
+                    // add db
+                   saveQuestion()
+                }
+            }
+        } else {
+            if(allQuizQuestion.isEmpty()){
+                addQuestion()
+                saveQuestion()
+            }else{
+                if (isAnyFieldEmpty || countCheck == 0){
+                    Log.d("InputQuestion", "Semua pertanyaan harus diisi")
+                    Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
+                }else{
+                    Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
+                    updateQuestion(nextIndex)
+                    saveQuestion()
+                }
+            }
+        }
+    }
+
+    fun nextButton(){
+        Log.d("InputQuestion", "Next Button")
+    }
 
     Surface(
         modifier = Modifier
@@ -201,15 +317,7 @@ fun InputQuestion(
                         modifier = Modifier
                             .size(22.dp)
                             .clickable {
-                                if (allQuizQuestion.isEmpty() && question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty() && countCheck == 0){
-                                    navController.navigate(Screen.SelectTopic.route)
-                                }else{
-                                    // Alert
-                                    Log.d("InputQuestion", "Alert")
-                                    showDialog = true
-                                    dialogBack = true
-                                    dialogSelesai = false
-                                }
+                                checkBackEmpty()
                             }
                     )
                 }
@@ -376,6 +484,7 @@ fun InputQuestion(
                                 horizontalArrangement = Arrangement.SpaceEvenly,
                                 verticalAlignment = Alignment.CenterVertically
                             ){
+
                                 //Button Prev
                                 Button(
                                     modifier = Modifier
@@ -389,13 +498,8 @@ fun InputQuestion(
                                     onClick = {
                                         //DO something
                                         Log.d("InputQuestion", "Button Prev Clicked")
-                                        if(currentEditingIndex >= 0){
-                                            loadQuestionDataIntoUI(currentEditingIndex)
-                                            countCheck = if (isAnswer1Correct || isAnswer2Correct || isAnswer3Correct || isAnswer4Correct) 1 else 0
-                                            currentEditingIndex--
-                                            Log.d("InputQuestion", "Current Editing Index: $currentEditingIndex")
-                                            return@Button
-                                        }
+                                        prevQuestion()
+                                        return@Button
 
                                     },
                                     enabled = allQuizQuestion.isNotEmpty() && currentEditingIndex >= 0
@@ -420,89 +524,11 @@ fun InputQuestion(
                                     ),
                                     onClick = {
                                         Log.d("InputQuestion", "Button Selesai Clicked")
-                                        var nextIndex = if (currentEditingIndex == -1) 0 else currentEditingIndex + 1
-                                        if (nextIndex >= allQuizQuestion.size){
-                                            if ((question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty() )&& countCheck == 0){
-                                                qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
-                                                        success, message ->
-                                                    if (success){
-                                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                                        navController.navigate(Screen.SelectTopic.route){
-                                                            popUpTo(Screen.SelectTopic.route){
-                                                                inclusive = true
-                                                            }
-                                                            launchSingleTop = true
-                                                        }
-                                                    }else{
-                                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                                        Log.d("InputQuestion", "Error: $message")
-                                                    }
-                                                }
-                                            }else{
-                                                if((question.isNotEmpty() || answer1.isNotEmpty() || answer2.isNotEmpty() || answer3.isNotEmpty() || answer4.isNotEmpty()) && countCheck == 0 ){
-                                                    Log.d("InputQuestion", "Semua pertanyaan harus diisi")
-                                                    Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
-                                                    return@Button
-                                                }else{
-                                                    Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
-
-                                                    // add db
-                                                    qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
-                                                            success, message ->
-                                                        if (success){
-                                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                                            navController.navigate(Screen.SelectTopic.route){
-                                                                popUpTo(Screen.SelectTopic.route){
-                                                                    inclusive = true
-                                                                }
-                                                                launchSingleTop = true
-                                                            }
-                                                        }else{
-                                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                                            Log.d("InputQuestion", "Error: $message")
-                                                        }
-                                                    }
-                                                }
-
-                                            }
-                                        } else {
-                                            val updatedQuestion = QuizQuestion(
-                                                questionText = question,
-                                                options = listOf(
-                                                    AnswerOption(answer1, isAnswer1Correct),
-                                                    AnswerOption(answer2, isAnswer2Correct),
-                                                    AnswerOption(answer3, isAnswer3Correct),
-                                                    AnswerOption(answer4, isAnswer4Correct)
-                                                )
-                                            )
-                                            Log.d("InputQuestion", "Attempted to add question")
-                                            allQuizQuestion[nextIndex] = updatedQuestion
-
-                                            qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
-                                                    success, message ->
-                                                if (success){
-                                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                                    navController.navigate(Screen.SelectTopic.route){
-                                                        popUpTo(Screen.SelectTopic.route){
-                                                            inclusive = true
-                                                        }
-                                                        launchSingleTop = true
-                                                    }
-                                                }else{
-                                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                                    Log.d("InputQuestion", "Error: $message")
-                                                }
-                                            }
-
-                                        }
-
-
-
-
+                                        selesaiButton()
                                         ////////
 
                                     },
-                                    enabled = allQuizQuestion.isNotEmpty()
+                                    enabled = question.isNotEmpty() && answer1.isNotEmpty() && answer2.isNotEmpty() && answer3.isNotEmpty() && answer4.isNotEmpty() && countCheck >= 1
                                 ){
                                     Text(
                                         text = "Selesai",

@@ -1,9 +1,12 @@
 package com.example.qwizz.data.model
 
+import com.google.firebase.firestore.FieldValue
+
 data class Qwizzz(
     val id: String = "",
     val topic: String = "",
     val title: String = "",
+    val createdAt: FieldValue = FieldValue.serverTimestamp(),
     val question: List<QuizQuestion> = emptyList()
 )
 

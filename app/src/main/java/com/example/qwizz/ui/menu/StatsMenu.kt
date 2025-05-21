@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -43,6 +44,7 @@ import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.component.TitleComponent
 import com.example.qwizz.viewmodel.auth.AuthViewModel
+import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -51,9 +53,10 @@ import kotlin.math.exp
 //@Preview(showBackground = true)
 @Composable
 fun StatsMenu(
-    navController: NavController,
-    authViewModel: AuthViewModel= viewModel()
+    navController: NavController
 ){
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(context))
     var isLoading by remember { mutableStateOf(false) }
 
     val draw = painterResource(R.drawable.bg)

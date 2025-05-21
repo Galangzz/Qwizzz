@@ -25,6 +25,7 @@ class MakeQwizzzViewModel: ViewModel() {
     private val _qwizzz = MutableStateFlow<Qwizzz>( Qwizzz())
     val qwizzz = _qwizzz.asStateFlow()
 
+
     val isLoading = mutableStateOf(false)
 
      fun saveQwizzzToDB(topic : String, title: String, qwizQuestion: List<QuizQuestion>, onResult: (success: Boolean, message: String?) -> Unit) {
@@ -34,12 +35,13 @@ class MakeQwizzzViewModel: ViewModel() {
          }
          viewModelScope.launch {
 
-             val qwizzz = Qwizzz(id.toString(), topic, title, qwizQuestion)
+//             val qwizzz = Qwizzz(
+//                 id.toString(), topic, title, qwizQuestion)
              isLoading.value = true
              _qwizzzState.value = QwizzzState.Loading
 
             try {
-                val result = qwizzControl.addQwizzz(qwizzz)
+                val result = qwizzControl.addQwizzz(id.toString(), topic, title, qwizQuestion)
                 if (result) {
                     Log.d(ContentValues.TAG, "Qwizzz saved successfully")
                     _qwizzzState.value = QwizzzState.QwizzzSaved
@@ -59,6 +61,7 @@ class MakeQwizzzViewModel: ViewModel() {
 
          }
     }
+
 
 
 }

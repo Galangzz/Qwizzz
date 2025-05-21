@@ -1,16 +1,17 @@
 package com.example.qwizz.viewmodel.auth
 
 import android.content.ContentValues
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qwizz.data.control.AuthControl
 import com.example.qwizz.data.model.User
 import com.example.qwizz.util.ValidationsUtils
 import com.google.firebase.auth.FirebaseAuth
-import com.google.rpc.context.AttributeContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +20,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "AuthViewModel"
 
-class AuthViewModel: ViewModel() {
+class AuthViewModel(private val pref: SharedPreferences): ViewModel() {
 
     private val authControl: AuthControl = AuthControl()
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -32,6 +33,7 @@ class AuthViewModel: ViewModel() {
 
     private val _userEmail = MutableStateFlow("")
     val userEmail: StateFlow<String> = _userEmail.asStateFlow()
+
 
     val isLoading = mutableStateOf(false)
 
@@ -82,6 +84,9 @@ class AuthViewModel: ViewModel() {
             }
         }
     }
+    fun getCurrentUser(): Boolean {
+        return auth.currentUser != null
+    }
 
 
      fun loginUser(email: String, password: String, onResult: (success: Boolean, message: String?) -> Unit) {
@@ -125,6 +130,7 @@ class AuthViewModel: ViewModel() {
             isLoading.value = true
             try {
                 authControl.logoutUser()
+                clearSharedPreferences()
                 _authState.value = AuthState.Unauthenticated
                 _currentUser.value = null
                 _userEmail.value = ""
@@ -158,6 +164,30 @@ class AuthViewModel: ViewModel() {
             }
         }
     }
+
+    fun saveUserToSharedPreferences(values : Boolean){
+        pref.edit() {
+            putBoolean("remember", values)
+            apply()
+        }
+    }
+
+    fun getUidFromSharedPreferences(): String? {
+        return pref.getString("uid", null)
+    }
+
+    fun isRemembered(): Boolean {
+        return pref.getBoolean("remember", false)
+    }
+
+    fun clearSharedPreferences() {
+        pref.edit() {
+            clear()
+            apply()
+        }
+    }
+
+
 
 
 }

@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.viewmodel.auth.AuthViewModel
+import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -54,8 +55,10 @@ import com.google.firebase.auth.auth
 @Composable
 fun RegisterScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = viewModel()
 ){
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(context))
+
     val auth : FirebaseAuth = Firebase.auth
     var userName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -68,7 +71,6 @@ fun RegisterScreen(
     var passwordError by remember {mutableStateOf(false)}
     var isLoading by remember { mutableStateOf(false)}
 
-    val context = LocalContext.current
 
     val pressStart2P = FontFamily(
         Font(R.font.p2p_regular, FontWeight.Normal)

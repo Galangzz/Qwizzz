@@ -1,6 +1,7 @@
 package com.example.qwizz.ui.auth
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,19 +45,22 @@ import com.example.qwizz.Screen
 import android.widget.Toast
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qwizz.data.control.CredentialsManager
 import com.example.qwizz.viewmodel.auth.AuthViewModel
+import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
 import java.lang.Compiler.enable
 
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = viewModel()
+
 ){
-    val credentialsManager = CredentialsManager(LocalContext.current)
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(context))
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -67,10 +71,9 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false)}
 
 
-    val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
 
-    var rememberMeChecked by remember { mutableStateOf(sharedPreferences.getBoolean("rememberMe", false)) }
+
+    var rememberMeChecked by remember { mutableStateOf(false) }
 
 
     val pressStart2P = FontFamily(
@@ -211,17 +214,21 @@ fun LoginScreen(
                             .padding(horizontal = 5.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ){
-                        sharedPreferences.edit().putBoolean("rememberMe", rememberMeChecked).apply()
                         isCheckboxChecked = false
                         Checkbox(
                             checked = rememberMeChecked,
                             onCheckedChange = {isChecked ->
                                 rememberMeChecked = isChecked
-                                sharedPreferences.edit().putBoolean("rememberMe", isChecked).apply()
+
                                 if(!isChecked){
                                     isCheckboxChecked = false
+                                    authViewModel.clearSharedPreferences()
+                                    Log.d("LoginScreen", "User removed from shared preferences, remember: ${authViewModel.isRemembered()}")
+
                                 }else{
                                     isCheckboxChecked = true
+                                    authViewModel.saveUserToSharedPreferences(isCheckboxChecked)
+                                    Log.d("LoginScreen", "User saved to shared preferences, remember: ${authViewModel.isRemembered()}")
                                 }
                             }
                         )

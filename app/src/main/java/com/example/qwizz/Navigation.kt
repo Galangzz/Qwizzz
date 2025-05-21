@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.qwizz.ui.auth.LoginScreen
 import com.example.qwizz.ui.auth.RegisterScreen
+import com.example.qwizz.ui.doqwizz.SearchSelectQwizzz
 import com.example.qwizz.ui.makeqwizz.InputQuestion
 import com.example.qwizz.ui.makeqwizz.SelectTopic
 import com.example.qwizz.ui.menu.MainMenu
@@ -62,6 +63,10 @@ fun Navigation(){
             composable(Screen.SelectTopic.route) {
                 SelectTopic(navController = navController)
             }
+            composable(Screen.searchSelectQwizzz.route){
+                Log.d("Navigation", "searchSelectQwizzz")
+                SearchSelectQwizzz(navController = navController)
+            }
             composable(
                 route = Screen.inputQuestion.route + "/{topic}/{title}",
                 arguments = listOf(
@@ -81,7 +86,6 @@ fun Navigation(){
                 val title = backStackEntry.arguments?.getString("title")
                 InputQuestion(navController = navController, topic = topic.toString(), title = title.toString())
             }
-
         }
     } ?: run{
         Log.d("Navigation", "startDestination is null")

@@ -99,7 +99,7 @@ fun MainMenu(
                         containerColor = colorResource(R.color.blue_card_main)
                     ),
                     onClick = {
-                        //Menuju ke Halaman Pilih Qwizz
+                        navController.navigate(Screen.searchSelectQwizzz.route)
                     }
 
                 ) {

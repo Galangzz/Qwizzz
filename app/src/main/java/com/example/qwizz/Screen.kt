@@ -7,6 +7,7 @@ sealed  class Screen (val route: String) {
     object StatsMenu : Screen("stats_menu")
     object inputQuestion : Screen("input_question")
     object SelectTopic : Screen("select_topic")
+    object searchSelectQwizzz : Screen("search_select_qwizz")
 
     fun withArgs(vararg args: String): String {
         return buildString {

@@ -1,7 +1,7 @@
 package com.example.qwizz.ui.auth
 
-import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,12 +12,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -30,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -39,19 +46,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
-import android.widget.Toast
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.qwizz.data.control.CredentialsManager
 import com.example.qwizz.viewmodel.auth.AuthViewModel
 import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
-import java.lang.Compiler.enable
 
 
 @Composable
@@ -67,11 +67,7 @@ fun LoginScreen(
     var passwordVisible by remember{ mutableStateOf(false) }
     var emailError by remember{ mutableStateOf(false) }
     var isCheckboxChecked by remember { mutableStateOf(false) }
-
     var isLoading by remember { mutableStateOf(false)}
-
-
-
 
     var rememberMeChecked by remember { mutableStateOf(false) }
 
@@ -180,6 +176,17 @@ fun LoginScreen(
                             unfocusedBorderColor = colorResource(R.color.black),
                             focusedBorderColor = colorResource(R.color.black_shadow)
                         ),
+                        isError = emailError,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null,
+                                tint = colorResource(R.color.black),
+                                modifier = Modifier
+                                    .size(25.dp)
+                            )
+                        },
+
                         singleLine = true
                     )
 
@@ -206,6 +213,16 @@ fun LoginScreen(
                             unfocusedBorderColor = colorResource(R.color.black),
                             focusedBorderColor = colorResource(R.color.black_shadow)
                         ),
+                        isError = password.isNotEmpty() && password.length < 8,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = colorResource(R.color.black),
+                                modifier = Modifier
+                                    .size(25.dp)
+                            )
+                        },
                         singleLine = true
                     )
                     Row (
@@ -270,6 +287,9 @@ fun LoginScreen(
                                 else{
                                     isLoading = false
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                    if (message == "Format email tidak valid"){
+                                        emailError = true
+                                    }
                                 }
 
                             }

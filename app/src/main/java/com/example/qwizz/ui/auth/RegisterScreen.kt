@@ -15,10 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -174,6 +179,16 @@ fun RegisterScreen(
                             unfocusedBorderColor = colorResource(R.color.black),
                             focusedBorderColor = colorResource(R.color.black_shadow)
                         ),
+                        isError = usernameError,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = colorResource(R.color.black),
+                                modifier = Modifier
+                                    .size(25.dp)
+                            )
+                        },
                         singleLine = true
                     )
 
@@ -199,6 +214,16 @@ fun RegisterScreen(
                             unfocusedBorderColor = colorResource(R.color.black),
                             focusedBorderColor = colorResource(R.color.black_shadow)
                         ),
+                        isError = emailError,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null,
+                                tint = colorResource(R.color.black),
+                                modifier = Modifier
+                                    .size(25.dp)
+                            )
+                        },
                         singleLine = true
                     )
 
@@ -225,6 +250,15 @@ fun RegisterScreen(
                             unfocusedBorderColor = colorResource(R.color.black),
                             focusedBorderColor = colorResource(R.color.black_shadow)
                         ),
+                        isError = passwordError,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = colorResource(R.color.black),
+                                modifier = Modifier.size(25.dp)
+                            )
+                        },
                         singleLine = true
                     )
 
@@ -241,38 +275,6 @@ fun RegisterScreen(
                             emailError = false
                             passwordError = false
 
-                            if(userName.isEmpty()){
-                                Toast.makeText(context, "Username tidak boleh kosong", Toast.LENGTH_SHORT).show()
-                                usernameError = true
-                                registerFailed = true
-                                isLoading = false
-                                return@Button
-                            }
-                            if(email.isEmpty()){
-                                Toast.makeText(context, "Email tidak boleh kosong", Toast.LENGTH_SHORT).show()
-                                emailError = true
-                                registerFailed = true
-                                isLoading = false
-                                return@Button
-                            }
-                            if(password.isEmpty()) {
-                                Toast.makeText(
-                                    context,
-                                    "Password tidak boleh kosong",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                passwordError = true
-                                registerFailed = true
-                                isLoading = false
-                                return@Button
-                            }
-                            if(password.length < 6){
-                                Toast.makeText(context, "Password minimal 6 karakter", Toast.LENGTH_SHORT).show()
-                                passwordError = true
-                                registerFailed = true
-                                isLoading = false
-                                return@Button
-                            }
 
                             Log.d("RegisterScreen", "Attempting registration with username: $userName, email: $email")
 
@@ -291,10 +293,21 @@ fun RegisterScreen(
                                     isLoading = false
                                     return@registerUser
                                 }
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show().toString()
-                                registerFailed = true
-                                isLoading = false
-
+                                else{
+                                    if(message == "Email tidak boleh kosong" || message == "Format email tidak valid"){
+                                        emailError = true
+                                    }
+                                    if(message == "Password tidak boleh kosong" || message == "Password minimal 8 karakter" || message == "Password harus berisi minimal 1 huruf besar, 1 huruf kecil, " + "1 angka, dan 1 karakter khusus (@#$%^&+=!)"){
+                                        passwordError = true
+                                    }
+                                    if(message == "Username tidak boleh kosong" || message == "Username hanya boleh berisi huruf, angka, dan karakter . _ -" + " dengan panjang 3-20 karakter"){
+                                        usernameError = true
+                                    }
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show().toString()
+                                    registerFailed = true
+                                    isLoading = false
+                                    return@registerUser
+                                }
                             }
 
                         },

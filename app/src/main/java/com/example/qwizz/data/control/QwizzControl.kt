@@ -15,11 +15,15 @@ private const val TAG = "QwizzControl"
 class QwizzControl {
     private val firestore: FirebaseFirestore = Firebase.firestore
     private val qwizzzColection = firestore.collection("qwizzz")
+    private val userCollection = firestore.collection("users")
+
 
     suspend fun addQwizzz(id: String, topic: String, title: String, totalDetik: Int, question: List<QuizQuestion>): Boolean{
         return try{
+            val name = userCollection.document(id).get().await().getString("name") ?: ""
             val qwizzz = Qwizzz(
                 id = id,
+                name = name,
                 topic = topic,
                 title = title,
                 createdAt = Timestamp.now(),

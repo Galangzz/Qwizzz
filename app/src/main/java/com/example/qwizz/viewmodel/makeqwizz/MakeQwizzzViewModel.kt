@@ -28,6 +28,7 @@ class MakeQwizzzViewModel: ViewModel() {
 
     val isLoading = mutableStateOf(false)
 
+
      fun saveQwizzzToDB(topic : String, title: String, totalDetik: Int, qwizQuestion: List<QuizQuestion>, onResult: (success: Boolean, message: String?) -> Unit) {
          if (id == null) {
              onResult(false, "User not authenticated")
@@ -39,6 +40,7 @@ class MakeQwizzzViewModel: ViewModel() {
              _qwizzzState.value = QwizzzState.Loading
 
             try {
+
                 val result = qwizzControl.addQwizzz(id.toString(), topic, title, totalDetik, qwizQuestion)
                 if (result) {
                     Log.d(ContentValues.TAG, "Qwizzz saved successfully")

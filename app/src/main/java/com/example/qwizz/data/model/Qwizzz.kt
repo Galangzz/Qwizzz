@@ -19,5 +19,5 @@ data class QuizQuestion(
 
 data class AnswerOption(
     val text: String = "",
-    val isCorrect: Boolean = false
+    val correct: Boolean = false
 )

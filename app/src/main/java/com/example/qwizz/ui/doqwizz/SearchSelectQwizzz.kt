@@ -63,8 +63,7 @@ fun SearchSelectQwizzz(
     LaunchedEffect(Unit) {
         Log.d("SearchSelectQwizzz", "LaunchedEffect called")
         qwizzVM.fetchQuizzes()
-        awaitFrame()
-        delay(3000)
+        delay(1000)
         Log.d("SearchSelectQwizzz", "availibleQwizzz: $availibleQwizzz")
     }
 
@@ -142,7 +141,9 @@ fun SearchSelectQwizzz(
                             duration = quiz.timeQuiz.toString(),
                             author = quiz.name,
                             image = R.drawable.math_selecqwizz_icon,
-                            onClick = {}
+                            onClick = {
+                                Log.d("SearchSelectQwizzz", "Clicked on: ${quiz.title}")
+                            }
                         )
                     }
                 }

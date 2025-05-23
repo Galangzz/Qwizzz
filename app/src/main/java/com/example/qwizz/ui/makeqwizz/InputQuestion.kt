@@ -132,10 +132,10 @@ fun InputQuestion(
             answer2 = questionToLoad.options.getOrElse(1) { AnswerOption("", false) }.text
             answer3 = questionToLoad.options.getOrElse(2) { AnswerOption("", false) }.text
             answer4 = questionToLoad.options.getOrElse(3) { AnswerOption("", false) }.text
-            isAnswer1Correct = questionToLoad.options.getOrElse(0) { AnswerOption("", false) }.isCorrect
-            isAnswer2Correct = questionToLoad.options.getOrElse(1) { AnswerOption("", false) }.isCorrect
-            isAnswer3Correct = questionToLoad.options.getOrElse(2) { AnswerOption("", false) }.isCorrect
-            isAnswer4Correct = questionToLoad.options.getOrElse(3) { AnswerOption("", false) }.isCorrect
+            isAnswer1Correct = questionToLoad.options.getOrElse(0) { AnswerOption("", false) }.correct
+            isAnswer2Correct = questionToLoad.options.getOrElse(1) { AnswerOption("", false) }.correct
+            isAnswer3Correct = questionToLoad.options.getOrElse(2) { AnswerOption("", false) }.correct
+            isAnswer4Correct = questionToLoad.options.getOrElse(3) { AnswerOption("", false) }.correct
             countCheck = if (isAnswer1Correct || isAnswer2Correct || isAnswer3Correct || isAnswer4Correct) 1 else 0
         }else{
             Log.e("InputQuestion", "Invalid index: $index")

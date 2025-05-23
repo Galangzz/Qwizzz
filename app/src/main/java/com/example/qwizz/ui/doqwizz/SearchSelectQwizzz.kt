@@ -1,6 +1,8 @@
 package com.example.qwizz.ui.doqwizz
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,8 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -39,10 +39,8 @@ import com.example.qwizz.Screen
 import com.example.qwizz.component.CardQwizzz
 import com.example.qwizz.component.SearchBar
 import com.example.qwizz.component.TitleComponent
-import com.example.qwizz.data.model.Qwizzz
 import com.example.qwizz.viewmodel.makeqwizz.DoQwizzzViewModel
-import kotlinx.coroutines.android.awaitFrame
-import kotlinx.coroutines.awaitAll
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 
 
@@ -71,12 +69,45 @@ fun SearchSelectQwizzz(
         }
     }
 
+    val mathIcon = listOf(
+        R.drawable.math1,
+        R.drawable.math2,
+        R.drawable.math3,
+        R.drawable.math4,
+        R.drawable.math5,
+        R.drawable.math6,
+        R.drawable.math7,
+    )
+
+    val bahasaIcon = listOf(
+        R.drawable.bahasa1,
+        R.drawable.bahasa2,
+        R.drawable.bahasa3,
+        R.drawable.bahasa4,
+        R.drawable.bahasa5,
+        R.drawable.bahasa6,
+        R.drawable.bahasa7
+    )
+
+    val topicIcon = mapOf(
+        "Matematika" to mathIcon,
+        "Bahasa" to bahasaIcon
+    )
+
 
     LaunchedEffect(Unit) {
         Log.d("SearchSelectQwizzz", "LaunchedEffect called")
         qwizzVM.fetchQuizzes()
         delay(1000)
-        Log.d("SearchSelectQwizzz", "availibleQwizzz: $availibleQwizzz")
+    }
+
+    BackHandler(enabled = true) {
+        navController.navigate(Screen.mainMenu.route){
+            popUpTo(0){
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
     }
 
 
@@ -125,7 +156,8 @@ fun SearchSelectQwizzz(
                     value = searchQwizzz,
                     onValueChange = { searchQwizzz = it },
                     onClick = {
-                        /*TODO*/
+                        Log.d("SearchSelectQwizzz", "Search button clicked")
+
                     }
                 )
 
@@ -146,14 +178,28 @@ fun SearchSelectQwizzz(
                 ) {
 
                     itemsIndexed(filteredQwizzz) { index, quiz ->
+                        val iconRes = topicIcon[quiz.topic]?.random() ?: R.drawable.math1
+                        val time = quiz.timeQuiz
+                        val duration =
+                            if (time > 60){
+                                val minutes = time / 60
+                                val seconds = time % 60
+                                "$minutes Menit $seconds Detik"
+                            }else{
+                                "$time Detik"
+                            }
+
+
                         CardQwizzz(
                             title = quiz.title,
                             topic = quiz.topic,
-                            duration = quiz.timeQuiz.toString(),
+                            duration = duration,
                             author = quiz.name,
-                            image = R.drawable.math_selecqwizz_icon,
+                            image = iconRes,
                             onClick = {
                                 Log.d("SearchSelectQwizzz", "Clicked on: ${quiz.title}")
+                                val json = Uri.encode(Gson().toJson(quiz))
+                                navController.navigate(Screen.initialDoQwizzz.withArgs(json))
                             }
                         )
                     }

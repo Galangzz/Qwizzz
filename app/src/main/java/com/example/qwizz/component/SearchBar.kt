@@ -26,15 +26,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.qwizz.R
 
+@Preview (showBackground = true)
 @Composable
 fun SearchBar(
-    value : String,
-    onValueChange : (String) -> Unit,
-    onClick : () -> Unit
+    value : String = "",
+    onValueChange : (String) -> Unit = {},
+    onClick : () -> Unit = {}
 ){
     val roboto = FontFamily(
         Font(R.font.roboto_bold, FontWeight.ExtraBold),
@@ -80,20 +82,20 @@ fun SearchBar(
                                 color = colorResource(R.color.white),
                                 shape = RoundedCornerShape(18.dp)
                             )
-                            .height(50.dp)
+                            .height(40.dp)
                             .fillMaxWidth(),
                         textStyle = TextStyle(
                             color = colorResource(R.color.black),
                             fontFamily = roboto,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            letterSpacing = 4.sp
+                            fontSize = 16.sp,
+                            letterSpacing = 1.sp
                         ),
                         decorationBox = { innerTextField ->
                             Row (
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 20.dp, vertical = 5.dp),
+                                    .padding(horizontal = 20.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ){
@@ -107,7 +109,7 @@ fun SearchBar(
                                             text = "Search Qwizzz",
                                             color = Color.DarkGray.copy(0.7f),
                                             fontFamily = roboto,
-                                            fontSize = 14.sp,
+                                            fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
                                             letterSpacing = 1.sp
                                         )

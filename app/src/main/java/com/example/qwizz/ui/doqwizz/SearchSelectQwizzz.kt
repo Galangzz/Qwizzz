@@ -59,6 +59,18 @@ fun SearchSelectQwizzz(
 
     val availibleQwizzz by qwizzVM.quizList.collectAsState()
 
+    val filteredQwizzz = remember(searchQwizzz, availibleQwizzz) {
+        if (searchQwizzz.isBlank()) {
+            availibleQwizzz
+        } else {
+            availibleQwizzz.filter { quiz ->
+                quiz.title.contains(searchQwizzz, ignoreCase = true) ||
+                        quiz.topic.contains(searchQwizzz, ignoreCase = true) ||
+                        quiz.name.contains(searchQwizzz, ignoreCase = true)
+            }
+        }
+    }
+
 
     LaunchedEffect(Unit) {
         Log.d("SearchSelectQwizzz", "LaunchedEffect called")
@@ -86,7 +98,6 @@ fun SearchSelectQwizzz(
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
-//                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -134,7 +145,7 @@ fun SearchSelectQwizzz(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    itemsIndexed(availibleQwizzz) { index, quiz ->
+                    itemsIndexed(filteredQwizzz) { index, quiz ->
                         CardQwizzz(
                             title = quiz.title,
                             topic = quiz.topic,

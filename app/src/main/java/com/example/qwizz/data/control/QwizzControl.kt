@@ -1,9 +1,11 @@
 package com.example.qwizz.data.control
 
+import android.nfc.Tag
 import android.util.Log
 import com.example.qwizz.data.model.QuizQuestion
 import com.example.qwizz.data.model.Qwizzz
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -14,13 +16,14 @@ class QwizzControl {
     private val firestore: FirebaseFirestore = Firebase.firestore
     private val qwizzzColection = firestore.collection("qwizzz")
 
-    suspend fun addQwizzz(id: String, topic: String, title: String, question: List<QuizQuestion>): Boolean{
+    suspend fun addQwizzz(id: String, topic: String, title: String, totalDetik: Int, question: List<QuizQuestion>): Boolean{
         return try{
             val qwizzz = Qwizzz(
                 id = id,
                 topic = topic,
                 title = title,
-                createdAt = FieldValue.serverTimestamp(),
+                createdAt = Timestamp.now(),
+                timeQuiz = totalDetik,
                 question = question
             )
             qwizzzColection.add(qwizzz).await()
@@ -31,6 +34,30 @@ class QwizzControl {
             false
         }
 
+    }
+
+    suspend fun getQwizzz(): List<Qwizzz> {
+        return try {
+            val querySnapshot = qwizzzColection.get().await()
+            querySnapshot.documents.forEach { doc ->
+                Log.d(TAG, "Qwizzz doc data: ${doc.data}")
+            }
+
+            Log.d(TAG, "Fetched ${querySnapshot.size()} qwizzz documents")
+            querySnapshot.documents.mapNotNull { doc ->
+                try {
+                    doc.toObject(Qwizzz::class.java)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error mapping document to Qwizzz: ${doc.id}", e)
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching qwizzz: ${e.localizedMessage}", e)
+            emptyList()
+        } finally {
+            Log.d(TAG, "Fetching qwizzz completed")
+        }
     }
 
 

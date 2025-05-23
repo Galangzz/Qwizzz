@@ -1,5 +1,6 @@
 package com.example.qwizz.ui.doqwizz
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,12 +12,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,23 +32,42 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.component.CardQwizzz
 import com.example.qwizz.component.SearchBar
 import com.example.qwizz.component.TitleComponent
+import com.example.qwizz.data.model.Qwizzz
+import com.example.qwizz.viewmodel.makeqwizz.DoQwizzzViewModel
+import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 
 
 @Composable
 fun SearchSelectQwizzz(
     navController: NavController
 ) {
+    val qwizzVM: DoQwizzzViewModel = viewModel()
 
     val draw = painterResource(R.drawable.bg)
     val backIcon = painterResource(R.drawable.back_icon)
 
     var searchQwizzz by remember { mutableStateOf("") }
+
+    val availibleQwizzz by qwizzVM.quizList.collectAsState()
+
+
+    LaunchedEffect(Unit) {
+        Log.d("SearchSelectQwizzz", "LaunchedEffect called")
+        qwizzVM.fetchQuizzes()
+        awaitFrame()
+        delay(3000)
+        Log.d("SearchSelectQwizzz", "availibleQwizzz: $availibleQwizzz")
+    }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -112,12 +135,12 @@ fun SearchSelectQwizzz(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    items(10) { index ->
+                    itemsIndexed(availibleQwizzz) { index, quiz ->
                         CardQwizzz(
-                            title = "Perkalian dan Pembagian",
-                            topic = "Matematika",
-                            duration = "20",
-                            author = "Galang",
+                            title = quiz.title,
+                            topic = quiz.topic,
+                            duration = quiz.timeQuiz.toString(),
+                            author = quiz.name,
                             image = R.drawable.math_selecqwizz_icon,
                             onClick = {}
                         )

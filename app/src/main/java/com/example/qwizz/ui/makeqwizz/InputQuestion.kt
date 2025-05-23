@@ -54,6 +54,7 @@ import androidx.navigation.NavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.component.AlertPerubahan
+import com.example.qwizz.component.ConfirmTime
 import com.example.qwizz.component.InputAnswerComponent
 import com.example.qwizz.component.TitleComponent
 import com.example.qwizz.data.model.AnswerOption
@@ -86,7 +87,7 @@ fun InputQuestion(
     val context = LocalContext.current
 
     val draw = painterResource(R.drawable.bg)
-    val back_icon = painterResource(R.drawable.back_icon)
+    val backIcon = painterResource(R.drawable.back_icon)
 
     var showDialog by remember { mutableStateOf(false) }
     var dialogBack by remember { mutableStateOf(false) }
@@ -110,6 +111,18 @@ fun InputQuestion(
 
 
 
+    fun resetUIForNewQuestion(){
+        question = ""
+        answer1 = ""
+        answer2 = ""
+        answer3 = ""
+        answer4 = ""
+        isAnswer1Correct = false
+        isAnswer2Correct = false
+        isAnswer3Correct = false
+        isAnswer4Correct = false
+        countCheck = 0
+    }
 
     fun loadQuestionDataIntoUI(index:Int){
         if(index >= 0 && index < allQuizQuestion.size && allQuizQuestion[index].questionText.isNotEmpty()){
@@ -126,21 +139,8 @@ fun InputQuestion(
             countCheck = if (isAnswer1Correct || isAnswer2Correct || isAnswer3Correct || isAnswer4Correct) 1 else 0
         }else{
             Log.e("InputQuestion", "Invalid index: $index")
-
+            resetUIForNewQuestion()
         }
-    }
-
-    fun resetUIForNewQuestion(){
-        question = ""
-        answer1 = ""
-        answer2 = ""
-        answer3 = ""
-        answer4 = ""
-        isAnswer1Correct = false
-        isAnswer2Correct = false
-        isAnswer3Correct = false
-        isAnswer4Correct = false
-        countCheck = 0
     }
 
     if (showDialog) {
@@ -156,7 +156,12 @@ fun InputQuestion(
                 currentEditingIndex = -1
                 resetUIForNewQuestion()
                 Log.d("InputQuestion", "All questions cleared")
-                navController.navigate(Screen.SelectTopic.route)
+                navController.navigate(Screen.SelectTopic.route){
+                    popUpTo(0){
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
             }
         )
     }
@@ -184,14 +189,14 @@ fun InputQuestion(
 
     }
 
-    fun saveQuestion(){
+    fun saveQuestion(totalDetik: Int){
         Log.d("InputQuestion", "Save Question")
-        qwizzViewModel.saveQwizzzToDB(topic, title, allQuizQuestion){
+        qwizzViewModel.saveQwizzzToDB(topic, title, totalDetik, allQuizQuestion){
                 success, message ->
             if (success){
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 navController.navigate(Screen.SelectTopic.route){
-                    popUpTo(Screen.SelectTopic.route){
+                    popUpTo(0){
                         inclusive = true
                     }
                     launchSingleTop = true
@@ -237,45 +242,82 @@ fun InputQuestion(
     }
 
 
-    fun selesaiButton(){
+    fun selesaiButton(totalDetik: Int){
         Log.d("InputQuestion", "Selesai Button")
         val isAllFieldEmpty = question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty()
         val isAnyFieldEmpty = question.isEmpty() || answer1.isEmpty() || answer2.isEmpty() || answer3.isEmpty() || answer4.isEmpty()
 
         val nextIndex = if (currentEditingIndex == -1) 0 else currentEditingIndex + 1
 
-        if (nextIndex > allQuizQuestion.size){
+        if (nextIndex >= allQuizQuestion.size){
             if (isAllFieldEmpty && countCheck == 0){
-                saveQuestion()
+                saveQuestion(totalDetik)
+                return
             }else{
                 if(isAnyFieldEmpty && countCheck == 0 ){
                     Log.d("InputQuestion", "Semua pertanyaan harus diisi")
                     Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
+                    return
                 }else{
                     Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
-                    // add db
-                   saveQuestion()
+                   saveQuestion(totalDetik)
+                    return
                 }
             }
         } else {
-            if(allQuizQuestion.isEmpty()){
-                addQuestion()
-                saveQuestion()
+            if (isAnyFieldEmpty || countCheck == 0){
+                Log.d("InputQuestion", "Semua pertanyaan harus diisi")
+                Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
+                return
             }else{
-                if (isAnyFieldEmpty || countCheck == 0){
-                    Log.d("InputQuestion", "Semua pertanyaan harus diisi")
-                    Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
-                }else{
-                    Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
-                    updateQuestion(nextIndex)
-                    saveQuestion()
-                }
+                Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
+                updateQuestion(nextIndex)
+                saveQuestion(totalDetik)
+                return
             }
         }
     }
 
     fun nextButton(){
         Log.d("InputQuestion", "Next Button")
+        val isAllFieldEmpty = question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty()
+        val isAnyFieldEmpty = question.isEmpty() || answer1.isEmpty() || answer2.isEmpty() || answer3.isEmpty() || answer4.isEmpty()
+
+        val nextIndex = if (currentEditingIndex == -1) 0 else currentEditingIndex + 1
+        if(isAllFieldEmpty && countCheck == 0){
+            Toast.makeText(context, "Semua pertanyaan harus diisi", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (isAnyFieldEmpty || countCheck == 0){
+            Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(nextIndex >= allQuizQuestion.size){
+            addQuestion()
+            currentEditingIndex++
+        } else{
+            updateQuestion(nextIndex)
+            currentEditingIndex++
+        }
+        loadQuestionDataIntoUI(nextIndex+1)
+        Log.d("InputQuestion", "Next Index: $nextIndex")
+        Log.d("InputQuestion", "Current Editing Index: $currentEditingIndex")
+        return
+    }
+
+    if (dialogSelesai){
+        ConfirmTime(
+            onDismiss = { dialogSelesai = false },
+            onConfirm = { totalDetik ->
+                if(totalDetik <= 0){
+                    Toast.makeText(context, "Waktu harus lebih dari 0 detik", Toast.LENGTH_SHORT).show()
+                }else{
+                    Log.d("InputQuestion", "Total Detik: $totalDetik")
+                    selesaiButton(totalDetik)
+                    dialogSelesai = false
+                }
+            }
+        )
     }
 
     Surface(
@@ -311,7 +353,7 @@ fun InputQuestion(
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     Icon(
-                        painter = back_icon,
+                        painter = backIcon,
                         contentDescription = null,
                         tint = colorResource(R.color.white),
                         modifier = Modifier
@@ -524,11 +566,9 @@ fun InputQuestion(
                                     ),
                                     onClick = {
                                         Log.d("InputQuestion", "Button Selesai Clicked")
-                                        selesaiButton()
-                                        ////////
-
+                                        dialogSelesai = true
                                     },
-                                    enabled = question.isNotEmpty() && answer1.isNotEmpty() && answer2.isNotEmpty() && answer3.isNotEmpty() && answer4.isNotEmpty() && countCheck >= 1
+                                    enabled = allQuizQuestion.isNotEmpty()
                                 ){
                                     Text(
                                         text = "Selesai",
@@ -551,67 +591,8 @@ fun InputQuestion(
                                     onClick = {
                                         //DO something
                                         Log.d("InputQuestion", "Button Next Clicked")
-                                        if(question.isEmpty() || answer1.isEmpty() || answer2.isEmpty() || answer3.isEmpty() || answer4.isEmpty()){
-                                            Toast.makeText(context, "Semua pertanyaan harus diisi", Toast.LENGTH_SHORT).show()
-                                            return@Button
-                                        }
-                                        if (countCheck < 1){
-                                            Toast.makeText(context, "Pilih jawaban yang benar", Toast.LENGTH_SHORT).show()
-                                            return@Button
-                                        }
-                                        var nextIndex = if (currentEditingIndex == -1) 0 else currentEditingIndex + 1
-                                        Log.d("InputQuestion", "Next Index: $nextIndex")
-                                        if (nextIndex >= allQuizQuestion.size) {
-                                            val updatedQuestion = QuizQuestion(
-                                                questionText = question,
-                                                options = listOf(
-                                                    AnswerOption(answer1, isAnswer1Correct),
-                                                    AnswerOption(answer2, isAnswer2Correct),
-                                                    AnswerOption(answer3, isAnswer3Correct),
-                                                    AnswerOption(answer4, isAnswer4Correct)
-                                                )
-                                            )
-                                            Log.d("InputQuestion", "Attempted to add question")
-                                            allQuizQuestion.add(updatedQuestion)
-                                            Log.d("InputQuestion", "Question added successfully")
-                                            resetUIForNewQuestion()
-                                            Log.d("InputQuestion", "Reset UI called")
-                                            Toast.makeText(context, "Pertanyaan berhasil ditambahkan", Toast.LENGTH_SHORT).show()
-                                            Log.d("InputQuestion", "Pertanyaan: ${allQuizQuestion[nextIndex].questionText}")
-                                            Log.d("InputQuestion", "Jawaban: ${allQuizQuestion[nextIndex].options}")
-                                            currentEditingIndex++
-                                            Log.d("InputQuestion", "Current Editing Index: $currentEditingIndex")
-                                            return@Button
-                                        }else{
-                                            Log.d("InputQuestion", "Attempted to update question")
-                                            Log.d("InputQuestion", "Current Editing Index: $currentEditingIndex")
-                                            //add
-                                            if (nextIndex >= 0 && nextIndex < allQuizQuestion.size) {
-                                                val updatedQuestion = QuizQuestion(
-                                                    questionText = question,
-                                                    options = listOf(
-                                                        AnswerOption(answer1, isAnswer1Correct),
-                                                        AnswerOption(answer2, isAnswer2Correct),
-                                                        AnswerOption(answer3, isAnswer3Correct),
-                                                        AnswerOption(answer4, isAnswer4Correct)
-                                                    )
-                                                )
-                                                allQuizQuestion[nextIndex] = updatedQuestion
-                                                Log.d("InputQuestion", "Question updated successfully")
-
-                                            }else{
-                                                Log.d("InputQuestion", "Invalid current editing index")
-                                                return@Button
-                                            }
-
-                                            Toast.makeText(context, "Pertanyaan berhasil diperbarui", Toast.LENGTH_SHORT).show()
-                                            currentEditingIndex++
-                                            //reset
-                                            resetUIForNewQuestion()
-                                            //load
-                                            loadQuestionDataIntoUI(nextIndex+1)
-                                            return@Button
-                                        }
+                                        nextButton()
+                                        return@Button
                                     },
                                     enabled = question.isNotEmpty() && answer1.isNotEmpty() && answer2.isNotEmpty() && answer3.isNotEmpty() && answer4.isNotEmpty() && countCheck >= 1
                                 ){
@@ -641,7 +622,15 @@ fun InputQuestion(
         if (allQuizQuestion.isEmpty() && question.isEmpty() && answer1.isEmpty() && answer2.isEmpty() && answer3.isEmpty() && answer4.isEmpty() && countCheck == 0) {
             Log.d("InputQuestion", "Back pressed")
             showDialog = false
-            navController.navigate(Screen.SelectTopic.route)
+            allQuizQuestion.clear()
+            currentEditingIndex = -1
+            resetUIForNewQuestion()
+            navController.navigate(Screen.SelectTopic.route){
+                popUpTo(Screen.SelectTopic.route){
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
         } else {
             showDialog = true
             dialogBack = true

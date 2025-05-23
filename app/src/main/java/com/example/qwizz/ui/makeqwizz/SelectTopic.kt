@@ -2,6 +2,7 @@ package com.example.qwizz.ui.makeqwizz
 
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -105,6 +106,15 @@ fun SelectTopic(
         )
     }
 
+    BackHandler(enabled = true) {
+        navController.navigate(Screen.mainMenu.route){
+            popUpTo(0){
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -140,7 +150,12 @@ fun SelectTopic(
                         modifier = Modifier
                             .size(22.dp)
                             .clickable{
-                                navController.navigate(Screen.mainMenu.route)
+                                navController.navigate(Screen.mainMenu.route){
+                                    popUpTo(0){
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
                             }
                     )
                 }

@@ -1,6 +1,7 @@
 package com.example.qwizz.ui.menu
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,14 +29,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,10 +44,7 @@ import com.example.qwizz.Screen
 import com.example.qwizz.component.TitleComponent
 import com.example.qwizz.viewmodel.auth.AuthViewModel
 import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
-import kotlin.math.exp
 
 //@Preview(showBackground = true)
 @Composable
@@ -60,7 +56,7 @@ fun StatsMenu(
     var isLoading by remember { mutableStateOf(false) }
 
     val draw = painterResource(R.drawable.bg)
-    val back_icon = painterResource(R.drawable.back_icon)
+    val backIcon = painterResource(R.drawable.back_icon)
 
     val pressStart2P = FontFamily(
         Font(R.font.p2p_regular, FontWeight.Normal)
@@ -75,6 +71,15 @@ fun StatsMenu(
 
     val user = FirebaseAuth.getInstance().currentUser
     Log.d("StatsMenu", "User email: ${user?.email}")
+
+    BackHandler(enabled = true) {
+        navController.navigate(Screen.mainMenu.route){
+            popUpTo(0){
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
+    }
 
     Surface (
         modifier = Modifier
@@ -115,13 +120,18 @@ fun StatsMenu(
                             verticalAlignment = Alignment.CenterVertically
                         ){
                             Icon(
-                                painter = back_icon,
+                                painter = backIcon,
                                 contentDescription = null,
                                 tint = colorResource(R.color.white),
                                 modifier = Modifier
                                     .size(22.dp)
                                     .clickable{
-                                        navController.navigate(Screen.mainMenu.route)
+                                        navController.navigate(Screen.mainMenu.route){
+                                            popUpTo(0){
+                                                inclusive = true
+                                            }
+                                            launchSingleTop = true
+                                        }
                                     },
                             )
                             Spacer(modifier = Modifier

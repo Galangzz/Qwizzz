@@ -22,6 +22,7 @@ import com.example.qwizz.data.model.Qwizzz
 import com.example.qwizz.ui.auth.LoginScreen
 import com.example.qwizz.ui.auth.RegisterScreen
 import com.example.qwizz.ui.doqwizz.InitialDoQwizzz
+import com.example.qwizz.ui.doqwizz.MainQwizzz
 import com.example.qwizz.ui.doqwizz.SearchSelectQwizzz
 import com.example.qwizz.ui.makeqwizz.InputQuestion
 import com.example.qwizz.ui.makeqwizz.SelectTopic
@@ -71,6 +72,7 @@ fun Navigation(){
             composable(Screen.initialDoQwizzz.route){
                 InitialDoQwizzz(navController = navController)
             }
+
             composable(
                 route = "${Screen.initialDoQwizzz.route}/{qwizzzJson}",
                 arguments = listOf(
@@ -83,6 +85,20 @@ fun Navigation(){
                 val json = Uri.decode(jsonEncode)
                 val qwizzz = Gson().fromJson(json, Qwizzz::class.java)
                 InitialDoQwizzz(navController = navController, qwizzz = qwizzz)
+            }
+
+            composable(
+                route = Screen.mainQwizzz.route + "/{qwizzzJson}",
+                arguments = listOf(
+                    navArgument("qwizzzJson") {
+                        type = NavType.StringType
+                    }
+                )
+            ){
+                val jsonEncode = it.arguments?.getString("qwizzzJson")
+                val json = Uri.decode(jsonEncode)
+                val qwizzz = Gson().fromJson(json, Qwizzz::class.java)
+                MainQwizzz(navController = navController, qwizzz = qwizzz)
             }
             composable(
                 route = Screen.inputQuestion.route + "/{topic}/{title}",

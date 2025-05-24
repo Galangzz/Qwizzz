@@ -1,5 +1,6 @@
 package com.example.qwizz.ui.doqwizz
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -47,6 +48,7 @@ import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.component.TitleComponent
 import com.example.qwizz.data.model.Qwizzz
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -199,6 +201,8 @@ fun InitialDoQwizzz(
                                         scope.launch{
                                             isLoading = true
                                             // go Do Qwizzz
+                                            val json = Uri.encode(Gson().toJson(qwizzz))
+                                            navController.navigate(Screen.mainQwizzz.withArgs(json))
                                             delay(3000)
                                             isLoading = false
                                         }

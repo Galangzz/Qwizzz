@@ -1,6 +1,7 @@
 package com.example.qwizz.data.control
 
 import android.util.Log
+import androidx.compose.runtime.mutableIntStateOf
 import com.example.qwizz.data.model.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -27,7 +28,9 @@ class AuthControl {
                 id = userId,
                 name = username,
                 email = email,
-                lastLogin = Date().time
+                lastLogin = Date().time,
+                mathscore = mutableListOf(),
+                bahasascore = mutableListOf()
             )
             usersCollection.document(userId).set(user).await()
             Log.d(TAG, "User registered successfully: $userId")

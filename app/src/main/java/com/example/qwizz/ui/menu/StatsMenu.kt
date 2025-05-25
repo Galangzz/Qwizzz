@@ -84,9 +84,10 @@ fun StatsMenu(
     )
 
     val mathScore = userStats?.mathscore
-    val listMathScore: List<Int> = mathScore ?: emptyList()
+    val listMathScore: List<Double> = mathScore ?: emptyList()
+    Log.d("StatsMenu", "listMathScore: $listMathScore")
     val bahasaScore = userStats?.bahasascore
-    val listBahasaScore: List<Int> = bahasaScore ?: emptyList()
+    val listBahasaScore: List<Double> = bahasaScore ?: emptyList()
 
 
     val totalSoalDikerjakan: Int = 0

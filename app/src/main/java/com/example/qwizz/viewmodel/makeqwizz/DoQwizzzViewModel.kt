@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qwizz.data.control.QwizzControl
+import com.example.qwizz.data.model.AnswerOption
 import com.example.qwizz.data.model.Qwizzz
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 
 class DoQwizzzViewModel: ViewModel() {
     private val qwizzControl = QwizzControl()
+
     private val _quizList = MutableStateFlow<List<Qwizzz>>(emptyList())
     val quizList: StateFlow<List<Qwizzz>> = _quizList
 
@@ -22,7 +24,6 @@ class DoQwizzzViewModel: ViewModel() {
         Log.d("DoQwizzzViewModel", "Fetching quizzes...")
         viewModelScope.launch {
             _doQwizzzState.value = DoQwizzzState.Loading
-
             try {
 
                 val result = qwizzControl.getQwizzz()
@@ -42,7 +43,72 @@ class DoQwizzzViewModel: ViewModel() {
                 Log.e("DoQwizzzViewModel", "Error fetching quizzes: ${e.localizedMessage}", e)
             }
         }
+    }
+
+    fun updateCurrentQwizzz(qwizzz: Qwizzz) {
+        viewModelScope.launch {
+            try {
+                _quizList.value = listOf(qwizzz)
+                _doQwizzzState.value = DoQwizzzState.QwizzzSaved
+                Log.d("DoQwizzzViewModel", "Qwizzz updated successfully: $qwizzz")
+            } catch (e: Exception) {
+                _doQwizzzState.value = DoQwizzzState.Error(e.localizedMessage ?: "Unknown error")
+            }
         }
+    }
+
+    fun countScore(userAnswer: List<AnswerOption>): Double {
+        var score = 0.0
+        val qwizzz = quizList.value.firstOrNull()
+        val correctOptionUser = mutableListOf<String>()
+        val correctOptionTexts = mutableListOf<String>()
+        qwizzz?.question?.forEach { quizQuestion ->
+            quizQuestion.options.forEach { answerOption ->
+                if (answerOption.correct) {
+                    correctOptionTexts.add(answerOption.text)
+                }
+            }
+        }
+        userAnswer.forEach { answerOption ->
+            if (answerOption.correct) {
+                correctOptionUser.add(answerOption.text)
+            }
+        }
+
+        correctOptionUser.forEach { userAnswerText ->
+            if (correctOptionTexts.contains(userAnswerText)) {
+                score++
+            }
+        }
+        score = (score / correctOptionTexts.size) * 100
+        Log.d("DoQwizzzViewModel", "Score: $score")
+
+        return score
+    }
+
+    fun addScore(score: Double){
+        val qwizzz = quizList.value.firstOrNull()
+        val topic = qwizzz?.topic?: ""
+        val scoreKey = if (topic == "Matematika"){
+            "mathscore"
+        } else if (topic == "Bahasa"){
+            "bahasascore"
+        } else {
+            Log.d("DoQwizzzViewModel", "Invalid topic: $topic")
+            topic
+        }
+
+        viewModelScope.launch {
+            try {
+                qwizzControl.updateUserScore(score, scoreKey)
+                Log.d("DoQwizzzViewModel", "Score added successfully")
+            } catch (e: Exception) {
+                Log.e("DoQwizzzViewModel", "Error adding score", e)
+            }
+        }
+
+    }
+
 
 
 

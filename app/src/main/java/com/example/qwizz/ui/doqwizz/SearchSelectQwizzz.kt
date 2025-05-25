@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,9 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.isEmpty
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
@@ -46,7 +50,8 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SearchSelectQwizzz(
-    navController: NavController
+    navController: NavController,
+    viwModel: DoQwizzzViewModel = viewModel()
 ) {
     val qwizzVM: DoQwizzzViewModel = viewModel()
 
@@ -62,9 +67,10 @@ fun SearchSelectQwizzz(
             availibleQwizzz
         } else {
             availibleQwizzz.filter { quiz ->
-                quiz.title.contains(searchQwizzz, ignoreCase = true) ||
-                        quiz.topic.contains(searchQwizzz, ignoreCase = true) ||
-                        quiz.name.contains(searchQwizzz, ignoreCase = true)
+                quiz.title.contains(searchQwizzz, ignoreCase = true) || quiz.topic.contains(
+                    searchQwizzz,
+                    ignoreCase = true
+                ) || quiz.name.contains(searchQwizzz, ignoreCase = true)
             }
         }
     }
@@ -90,20 +96,30 @@ fun SearchSelectQwizzz(
     )
 
     val topicIcon = mapOf(
-        "Matematika" to mathIcon,
-        "Bahasa" to bahasaIcon
+        "Matematika" to mathIcon, "Bahasa" to bahasaIcon
     )
 
+    var isLoaded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        isLoaded = true
         Log.d("SearchSelectQwizzz", "LaunchedEffect called")
-        qwizzVM.fetchQuizzes()
-        delay(1000)
+        try {
+            qwizzVM.fetchQuizzes()
+
+        } catch (e: Exception) {
+            Log.e("SearchSelectQwizzz", "Error fetching quizzes", e)
+        } finally {
+            delay(2000)
+            isLoaded = false
+            Log.d("SearchSelectQwizzz", "Loading finished")
+        }
+
     }
 
     BackHandler(enabled = true) {
-        navController.navigate(Screen.mainMenu.route){
-            popUpTo(0){
+        navController.navigate(Screen.mainMenu.route) {
+            popUpTo(0) {
                 inclusive = true
             }
             launchSingleTop = true
@@ -115,9 +131,7 @@ fun SearchSelectQwizzz(
         modifier = Modifier.fillMaxSize(),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
 
         ) {
             Image(
@@ -127,8 +141,7 @@ fun SearchSelectQwizzz(
                 contentDescription = null
             )
             Column(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -147,19 +160,14 @@ fun SearchSelectQwizzz(
                         modifier = Modifier
                             .size(22.dp)
                             .clickable {
-                                 navController.navigate(Screen.mainMenu.route)
-                            }
-                    )
+                                navController.navigate(Screen.mainMenu.route)
+                            })
                 }
 
-                SearchBar(
-                    value = searchQwizzz,
-                    onValueChange = { searchQwizzz = it },
-                    onClick = {
-                        Log.d("SearchSelectQwizzz", "Search button clicked")
+                SearchBar(value = searchQwizzz, onValueChange = { searchQwizzz = it }, onClick = {
+                    Log.d("SearchSelectQwizzz", "Search button clicked")
 
-                    }
-                )
+                })
 
                 HorizontalDivider(
                     modifier = Modifier
@@ -168,41 +176,66 @@ fun SearchSelectQwizzz(
                     thickness = 1.dp,
                     color = Color.DarkGray
                 )
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp, vertical = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    itemsIndexed(filteredQwizzz) { index, quiz ->
-                        val iconRes = topicIcon[quiz.topic]?.random() ?: R.drawable.math1
-                        val time = quiz.timeQuiz
-                        val duration =
-                            if (time > 60){
-                                val minutes = time / 60
-                                val seconds = time % 60
-                                "$minutes Menit $seconds Detik"
-                            }else{
-                                "$time Detik"
-                            }
-
-
-                        CardQwizzz(
-                            title = quiz.title,
-                            topic = quiz.topic,
-                            duration = duration,
-                            author = quiz.name,
-                            image = iconRes,
-                            onClick = {
-                                Log.d("SearchSelectQwizzz", "Clicked on: ${quiz.title}")
-                                val json = Uri.encode(Gson().toJson(quiz))
-                                navController.navigate(Screen.initialDoQwizzz.withArgs(json))
-                            }
+                if (isLoaded) {
+                    Log.d("SearchSelectQwizzz", "Loading...")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ){
+                        CircularProgressIndicator(
+                            color = colorResource(R.color.white)
                         )
                     }
+                } else {
+
+                    if (filteredQwizzz.isEmpty() && searchQwizzz.isNotEmpty()) {
+                        Text("Tidak ada kuis yang cocok dengan \"$searchQwizzz\".")
+                    } else if (availibleQwizzz.isEmpty() && !isLoaded) {
+                        Text("Belum ada kuis yang tersedia.")
+                    } else{
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp, vertical = 20.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            itemsIndexed(filteredQwizzz) { index, quiz ->
+                                val iconRes = topicIcon[quiz.topic]?.random() ?: R.drawable.math1
+                                val time = quiz.timeQuiz
+                                val duration = if (time > 60) {
+                                    val minutes = time / 60
+                                    val seconds = time % 60
+                                    "$minutes Menit $seconds Detik"
+                                } else {
+                                    "$time Detik"
+                                }
+                                CardQwizzz(
+                                    title = quiz.title,
+                                    topic = quiz.topic,
+                                    duration = duration,
+                                    author = quiz.name,
+                                    image = iconRes,
+                                    onClick = {
+                                        Log.d("SearchSelectQwizzz", "Card clicked")
+                                        qwizzVM.updateCurrentQwizzz(quiz)
+                                        Log.d("SearchSelectQwizzz", "Clicked on: ${quiz.title}")
+                                        navController.navigate(Screen.initialDoQwizzz.route){
+                                            popUpTo(Screen.searchSelectQwizzz.route) {
+                                                inclusive = false
+                                            }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
+                            }
+                        }
+
+                    }
+
                 }
             }
         }

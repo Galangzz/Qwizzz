@@ -1,6 +1,7 @@
 package com.example.qwizz.ui.doqwizz
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,12 +44,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.component.TitleComponent
 import com.example.qwizz.data.model.Qwizzz
+import com.example.qwizz.viewmodel.makeqwizz.DoQwizzzViewModel
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -56,9 +60,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun InitialDoQwizzz(
     navController: NavController = rememberNavController(),
-    qwizzz: Qwizzz = Qwizzz()
+    viewModel: DoQwizzzViewModel = viewModel()
 ){
-
+    val qwizzzList by viewModel.quizList.collectAsState()
+    val qwizzz = remember (qwizzzList) {
+        qwizzzList.firstOrNull() ?: Qwizzz()
+    }
+    Log.d("InitialDoQwizzz", "Qwizzz: $qwizzz")
     val draw = painterResource(R.drawable.bg)
     val backIcon = painterResource(R.drawable.back_icon)
 
@@ -129,11 +137,10 @@ fun InitialDoQwizzz(
                             .size(22.dp)
                             .clickable {
                                 navController.navigate(Screen.searchSelectQwizzz.route){
-                                    popUpTo(0){
-                                        inclusive = true
+                                    popUpTo(Screen.searchSelectQwizzz.route){
+                                        inclusive = false
                                     }
                                     launchSingleTop = true
-
                                 }
                             }
                     )
@@ -201,8 +208,12 @@ fun InitialDoQwizzz(
                                         scope.launch{
                                             isLoading = true
                                             // go Do Qwizzz
-                                            val json = Uri.encode(Gson().toJson(qwizzz))
-                                            navController.navigate(Screen.mainQwizzz.withArgs(json))
+                                            navController.navigate(Screen.mainQwizzz.route){
+                                                popUpTo(Screen.searchSelectQwizzz.route){
+                                                    inclusive = false
+                                                }
+                                                launchSingleTop = true
+                                            }
                                             delay(3000)
                                             isLoading = false
                                         }

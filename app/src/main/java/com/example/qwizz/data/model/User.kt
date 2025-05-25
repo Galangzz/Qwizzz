@@ -5,6 +5,6 @@ data class User(
     val name: String = "",
     val email: String = "",
     val lastLogin: Long = 0,
-    val mathscore: MutableList<Int> = mutableListOf(),
-    val bahasascore: MutableList<Int> = mutableListOf(),
+    val mathscore: MutableList<Double> = mutableListOf(),
+    val bahasascore: MutableList<Double> = mutableListOf(),
 )

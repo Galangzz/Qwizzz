@@ -1,7 +1,7 @@
 package com.example.qwizz
 
-import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -18,7 +19,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.qwizz.data.model.Qwizzz
 import com.example.qwizz.ui.auth.LoginScreen
 import com.example.qwizz.ui.auth.RegisterScreen
 import com.example.qwizz.ui.doqwizz.InitialDoQwizzz
@@ -30,7 +30,7 @@ import com.example.qwizz.ui.menu.MainMenu
 import com.example.qwizz.ui.menu.StatsMenu
 import com.example.qwizz.viewmodel.auth.AuthViewModel
 import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
-import com.google.gson.Gson
+import com.example.qwizz.viewmodel.makeqwizz.DoQwizzzViewModel
 import kotlinx.coroutines.delay
 
 @Composable
@@ -66,39 +66,28 @@ fun Navigation(){
                 SelectTopic(navController = navController)
             }
             composable(Screen.searchSelectQwizzz.route){
-                Log.d("Navigation", "searchSelectQwizzz")
-                SearchSelectQwizzz(navController = navController)
+                val viewModel: DoQwizzzViewModel = viewModel()
+                SearchSelectQwizzz(navController = navController, viewModel)
             }
             composable(Screen.initialDoQwizzz.route){
                 InitialDoQwizzz(navController = navController)
             }
 
-            composable(
-                route = "${Screen.initialDoQwizzz.route}/{qwizzzJson}",
-                arguments = listOf(
-                    navArgument("qwizzzJson") {
-                        type = NavType.StringType
-                    }
-                )
-            ){ backStackEntry ->
-                val jsonEncode = backStackEntry.arguments?.getString("qwizzzJson")
-                val json = Uri.decode(jsonEncode)
-                val qwizzz = Gson().fromJson(json, Qwizzz::class.java)
-                InitialDoQwizzz(navController = navController, qwizzz = qwizzz)
+            composable(Screen.initialDoQwizzz.route){
+                val parentEntry = remember(it) {
+                    navController.getBackStackEntry(Screen.searchSelectQwizzz.route)
+                }
+                val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
+                InitialDoQwizzz(navController = navController, viewModel)
             }
 
-            composable(
-                route = Screen.mainQwizzz.route + "/{qwizzzJson}",
-                arguments = listOf(
-                    navArgument("qwizzzJson") {
-                        type = NavType.StringType
-                    }
-                )
-            ){
-                val jsonEncode = it.arguments?.getString("qwizzzJson")
-                val json = Uri.decode(jsonEncode)
-                val qwizzz = Gson().fromJson(json, Qwizzz::class.java)
-                MainQwizzz(navController = navController, qwizzz = qwizzz)
+            composable(Screen.mainQwizzz.route){
+                val parentEntry = remember(it) {
+                    navController.getBackStackEntry(Screen.searchSelectQwizzz.route)
+                }
+                Log.d("Navigation", "mainQwizzz")
+                val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
+                MainQwizzz(navController = navController, viewModel)
             }
             composable(
                 route = Screen.inputQuestion.route + "/{topic}/{title}",
@@ -122,7 +111,9 @@ fun Navigation(){
         }
     } ?: run{
         Log.d("Navigation", "startDestination is null")
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.Transparent), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     }

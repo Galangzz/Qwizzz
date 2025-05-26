@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.qwizz.ui.auth.LoginScreen
 import com.example.qwizz.ui.auth.RegisterScreen
+import com.example.qwizz.ui.doqwizz.HasilAkhir
 import com.example.qwizz.ui.doqwizz.InitialDoQwizzz
 import com.example.qwizz.ui.doqwizz.MainQwizzz
 import com.example.qwizz.ui.doqwizz.SearchSelectQwizzz
@@ -81,13 +82,30 @@ fun Navigation(){
                 InitialDoQwizzz(navController = navController, viewModel)
             }
 
-            composable(Screen.mainQwizzz.route){
-                val parentEntry = remember(it) {
+            composable(Screen.mainQwizzz.route){ backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(Screen.searchSelectQwizzz.route)
                 }
                 Log.d("Navigation", "mainQwizzz")
                 val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
                 MainQwizzz(navController = navController, viewModel)
+            }
+            composable(
+                route = Screen.hasilAkhir.route + "/{score}",
+                arguments = listOf(
+                    navArgument("score") {
+                        type = NavType.StringType
+                        defaultValue = "0.0"
+                        nullable = true
+                    }
+                )
+            ){ backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(Screen.searchSelectQwizzz.route)
+                }
+                val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
+                val score = backStackEntry.arguments?.getString("score")?.toDoubleOrNull() ?: 0.0
+                HasilAkhir(navController = navController, viewModel, score)
             }
             composable(
                 route = Screen.inputQuestion.route + "/{topic}/{title}",

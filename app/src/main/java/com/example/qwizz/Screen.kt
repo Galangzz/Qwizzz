@@ -11,6 +11,7 @@ sealed  class Screen (val route: String) {
     object searchSelectQwizzz : Screen("search_select_qwizz")
     object initialDoQwizzz : Screen("initial_do_qwizz")
     object mainQwizzz : Screen("main_qwizz")
+    object hasilAkhir : Screen("hasil_akhir")
 
 
     fun withArgs(vararg args: String): String {

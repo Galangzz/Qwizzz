@@ -9,12 +9,17 @@ import com.example.qwizz.data.model.Qwizzz
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class DoQwizzzViewModel: ViewModel() {
     private val qwizzControl = QwizzControl()
 
     private val _quizList = MutableStateFlow<List<Qwizzz>>(emptyList())
     val quizList: StateFlow<List<Qwizzz>> = _quizList
+
+    private val _stackAnswer = MutableStateFlow<List<AnswerOption>>(emptyList())
+    val stackAnswer: StateFlow<List<AnswerOption>> = _stackAnswer
 
     private val _doQwizzzState = MutableStateFlow<DoQwizzzState>(DoQwizzzState.Initial)
     val doQwizzzState: StateFlow<DoQwizzzState> = _doQwizzzState
@@ -58,6 +63,7 @@ class DoQwizzzViewModel: ViewModel() {
     }
 
     fun countScore(userAnswer: List<AnswerOption>): Double {
+        setAnswer(userAnswer)
         var score = 0.0
         val qwizzz = quizList.value.firstOrNull()
         val correctOptionUser = mutableListOf<String>()
@@ -81,6 +87,8 @@ class DoQwizzzViewModel: ViewModel() {
             }
         }
         score = (score / correctOptionTexts.size) * 100
+//        score = String.format("%.2f", score).toDouble()
+        score = BigDecimal(score).setScale(1, RoundingMode.HALF_UP).toDouble()
         Log.d("DoQwizzzViewModel", "Score: $score")
 
         return score
@@ -107,6 +115,17 @@ class DoQwizzzViewModel: ViewModel() {
             }
         }
 
+    }
+
+    fun setAnswer(answer: List<AnswerOption>){
+        Log.d("DoQwizzzViewModel", "setAnswer: $answer")
+        try{
+            _stackAnswer.value = answer
+            Log.d("DoQwizzzViewModel", "Answer set successfully")
+            Log.d("DoQwizzzViewModel", "Answer: ${stackAnswer.value}")
+        }catch (e: Exception){
+            Log.e("DoQwizzzViewModel", "Error setting answer", e)
+        }
     }
 
 

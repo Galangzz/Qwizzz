@@ -110,7 +110,7 @@ fun SearchSelectQwizzz(
         } catch (e: Exception) {
             Log.e("SearchSelectQwizzz", "Error fetching quizzes", e)
         } finally {
-            delay(2000)
+            delay(500)
             isLoaded = false
             Log.d("SearchSelectQwizzz", "Loading finished")
         }

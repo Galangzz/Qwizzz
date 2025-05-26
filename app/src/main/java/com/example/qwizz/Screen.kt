@@ -12,6 +12,7 @@ sealed  class Screen (val route: String) {
     object initialDoQwizzz : Screen("initial_do_qwizz")
     object mainQwizzz : Screen("main_qwizz")
     object hasilAkhir : Screen("hasil_akhir")
+    object reviewQwizzz : Screen("review_qwizz")
 
 
     fun withArgs(vararg args: String): String {

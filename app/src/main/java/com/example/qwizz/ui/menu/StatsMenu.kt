@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -89,10 +90,15 @@ fun StatsMenu(
     val bahasaScore = userStats?.bahasascore
     val listBahasaScore: List<Double> = bahasaScore ?: emptyList()
 
+    val math = userStats?.mathscore?.size ?: 0
+    val bahasa = userStats?.bahasascore?.size ?: 0
 
-    val totalSoalDikerjakan: Int = 0
-    val rataRataNilai: Int = 0
-    val jawabanBenar: Int = 0
+    val rataRataMath = listMathScore.average()
+    val rataRataBahasa = listBahasaScore.average()
+
+    val totalSoalDikerjakan: Int = math + bahasa
+    val rataRataNilaiMath: Double = String.format( "%.2f", if (math > 0) rataRataMath else 0.0).toDouble()
+    val rataRataNilaiBahasa: Double = String.format( "%.2f", if (bahasa > 0) rataRataBahasa else 0.0).toDouble()
 
     val user = FirebaseAuth.getInstance().currentUser
     Log.d("StatsMenu", "User email: ${user?.email}")
@@ -248,7 +254,7 @@ fun StatsMenu(
                                 .padding(20.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = colorResource(R.color.blue_rect),
-                                contentColor = colorResource(R.color.white)
+                                contentColor = Color.Transparent
                             )
 
                         ) {
@@ -271,7 +277,7 @@ fun StatsMenu(
                                     modifier = Modifier.padding(10.dp)
                                 )
                                 Text(
-                                    text = "Rata-rata nilai: ${rataRataNilai}",
+                                    text = "Rata-rata Matematika: ${rataRataNilaiMath}",
                                     fontFamily = roboto,
                                     color = colorResource(R.color.white),
                                     fontSize = 12.sp,
@@ -279,7 +285,7 @@ fun StatsMenu(
                                     modifier = Modifier.padding(10.dp)
                                 )
                                 Text(
-                                    text = "Jawaban Benar: ${jawabanBenar}",
+                                    text = "Rata-rata Bahasa: ${rataRataNilaiBahasa}",
                                     fontFamily = roboto,
                                     color = colorResource(R.color.white),
                                     fontSize = 12.sp,
@@ -296,7 +302,7 @@ fun StatsMenu(
                                     .padding(horizontal = 5.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = colorResource(R.color.blue_box),
-                                    contentColor = colorResource(R.color.white)
+                                    contentColor = Color.Transparent
                                 )
                             ){
                                 Column (
@@ -327,7 +333,7 @@ fun StatsMenu(
                                     .padding(horizontal = 5.dp, vertical = 15.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = colorResource(R.color.blue_box),
-                                    contentColor = colorResource(R.color.white)
+                                    contentColor = Color.Transparent
                                 )
                             ){
                                 Column (

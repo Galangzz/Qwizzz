@@ -24,6 +24,7 @@ import com.example.qwizz.ui.auth.RegisterScreen
 import com.example.qwizz.ui.doqwizz.HasilAkhir
 import com.example.qwizz.ui.doqwizz.InitialDoQwizzz
 import com.example.qwizz.ui.doqwizz.MainQwizzz
+import com.example.qwizz.ui.doqwizz.ReviewQwizzz
 import com.example.qwizz.ui.doqwizz.SearchSelectQwizzz
 import com.example.qwizz.ui.makeqwizz.InputQuestion
 import com.example.qwizz.ui.makeqwizz.SelectTopic
@@ -89,6 +90,15 @@ fun Navigation(){
                 Log.d("Navigation", "mainQwizzz")
                 val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
                 MainQwizzz(navController = navController, viewModel)
+            }
+            composable(Screen.reviewQwizzz.route){ backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(Screen.searchSelectQwizzz.route)
+                }
+                val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
+                Log.d("Navigation", "reviewQwizzz")
+                ReviewQwizzz(navController = navController, viewModel)
+
             }
             composable(
                 route = Screen.hasilAkhir.route + "/{score}",

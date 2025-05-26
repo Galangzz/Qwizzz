@@ -65,7 +65,13 @@ class AuthViewModel(private val pref: SharedPreferences): ViewModel() {
             isLoading.value = true
             _authState.value = AuthState.Loading
             try {
+                val checkUsername = authControl.checkUserName(sanitizedUsername)
                 val result = authControl.registerUser(sanitizedUsername, email, password)
+                if (!checkUsername) {
+                    _authState.value = AuthState.Error("Username already exists")
+                    onResult(false, "Username already exists")
+                    return@launch
+                }
                 if (result) {
                     Log.d(ContentValues.TAG, "Register success email : $email")
                     _authState.value = AuthState.Authenticated

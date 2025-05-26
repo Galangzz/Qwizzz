@@ -38,17 +38,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.component.InputTitleQwiz
 import com.example.qwizz.component.TitleComponent
+import com.example.qwizz.viewmodel.makeqwizz.MakeQwizzzViewModel
 
 
 //@Preview(showBackground = true)
 @Composable
 fun SelectTopic(
-    navController: NavController
+    navController: NavController,
+    qwizzzViewModel: MakeQwizzzViewModel = viewModel()
 ){
     val presstart2P = FontFamily(
         Font(R.font.p2p_regular, FontWeight.Normal)
@@ -86,16 +89,23 @@ fun SelectTopic(
                         title = ""
                         return@InputTitleQwiz
                     }
-                    Log.d("SelectTopic", "Title: $title, Topic: $topic")
-                navController.navigate(Screen.inputQuestion.withArgs(topic, title)){
-                    popUpTo(0){
-                        inclusive = true
+                    qwizzzViewModel.checkTitle(title, topic) { success, message ->
+                        if (success) {
+                            navController.navigate(Screen.inputQuestion.withArgs(topic, title)){
+                                popUpTo(0){
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
+
+                            showDialog = false
+
+                        } else  {
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    launchSingleTop = true
-                }
-
-                    showDialog = false
-
+                    Log.d("SelectTopic", "Title: $title, Topic: $topic")
+                    return@InputTitleQwiz
                 }else{
                     Toast.makeText(context, "Judul Qwiz tidak boleh kosong", Toast.LENGTH_SHORT).show()
                     title = ""

@@ -240,6 +240,10 @@ fun InputQuestion(
         allQuizQuestion.add(updatedQuestion)
         Log.d("InputQuestion", "Question added successfully")
     }
+    fun checkDuplikatAnswer(): Boolean{
+        val answerList = listOf(answer1, answer2, answer3, answer4)
+        return answerList.distinct().size != answerList.size
+    }
 
 
     fun selesaiButton(totalDetik: Int){
@@ -254,12 +258,26 @@ fun InputQuestion(
                 saveQuestion(totalDetik)
                 return
             }else{
+                if(!isAllFieldEmpty && countCheck > 0){
+                    Log.d("InputQuestion", "Semua pertanyaan sudah diisi dan benar")
+                    if (checkDuplikatAnswer()){
+                        Toast.makeText(context, "Jawaban tidak boleh sama", Toast.LENGTH_SHORT).show()
+                        return
+                    }
+                    addQuestion()
+                    saveQuestion(totalDetik)
+                    return
+                }
                 if(isAnyFieldEmpty && countCheck == 0 ){
                     Log.d("InputQuestion", "Semua pertanyaan harus diisi")
                     Toast.makeText(context, "Semua pertanyaan harus diisi dan Pilih Jawaban yang benar", Toast.LENGTH_SHORT).show()
                     return
                 }else{
                     Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
+                    if (checkDuplikatAnswer()){
+                        Toast.makeText(context, "Jawaban tidak boleh sama", Toast.LENGTH_SHORT).show()
+                        return
+                    }
                    saveQuestion(totalDetik)
                     return
                 }
@@ -271,6 +289,10 @@ fun InputQuestion(
                 return
             }else{
                 Log.d("InputQuestion", " Semua pertanyaan sudah diisi dan benar")
+                if (checkDuplikatAnswer()){
+                    Toast.makeText(context, "Jawaban tidak boleh sama", Toast.LENGTH_SHORT).show()
+                    return
+                }
                 updateQuestion(nextIndex)
                 saveQuestion(totalDetik)
                 return
@@ -293,9 +315,17 @@ fun InputQuestion(
             return
         }
         if(nextIndex >= allQuizQuestion.size){
+            if (checkDuplikatAnswer()){
+                Toast.makeText(context, "Jawaban tidak boleh sama", Toast.LENGTH_SHORT).show()
+                return
+            }
             addQuestion()
             currentEditingIndex++
         } else{
+            if (checkDuplikatAnswer()){
+                Toast.makeText(context, "Jawaban tidak boleh sama", Toast.LENGTH_SHORT).show()
+                return
+            }
             updateQuestion(nextIndex)
             currentEditingIndex++
         }
@@ -304,6 +334,8 @@ fun InputQuestion(
         Log.d("InputQuestion", "Current Editing Index: $currentEditingIndex")
         return
     }
+
+
 
     if (dialogSelesai){
         ConfirmTime(

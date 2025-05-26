@@ -64,6 +64,33 @@ class QwizzControl {
         }
     }
 
+    suspend fun getTitleQwizzz(title: String, topic: String): String {
+        return try {
+            val userId = auth.currentUser?.uid ?: return ""
+            val userDocRef = qwizzzColection
+                .whereEqualTo("id", userId)
+                .whereEqualTo("title", title)
+                .whereEqualTo("topic", topic)
+                .limit(1)
+            val querySnapshot = userDocRef.get().await()
+            // Ambil dokumen pertama (jika ada)
+
+            val documentSnapshot = querySnapshot.documents.firstOrNull()
+
+            if (documentSnapshot != null && documentSnapshot.exists()) {
+                val title = documentSnapshot.getString("title") ?: ""
+                Log.d(TAG, "Fetched title: $title")
+                title
+            } else {
+                Log.d(TAG, "No quiz found for user $userId")
+                ""
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching title: ${e.localizedMessage}", e)
+            ""
+        }
+    }
+
     fun updateUserScore(score: Double, topic: String) {
         val userId = auth.currentUser?.uid ?: return
         val userDocRef = userCollection.document(userId)

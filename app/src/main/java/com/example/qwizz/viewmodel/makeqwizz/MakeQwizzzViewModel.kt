@@ -62,6 +62,26 @@ class MakeQwizzzViewModel: ViewModel() {
          }
     }
 
+    fun checkTitle(title: String, topic: String, onResult: (success: Boolean, message: String?) -> Unit) {
+        if (id == null) {
+            onResult(false, "User not authenticated")
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val title = qwizzControl.getTitleQwizzz(title, topic)
+                if (title.isNotEmpty()) {
+                    onResult(false, "Anda telah membuat qwizzz dengan judul: $title")
+                } else {
+                    onResult(true, "Silahkan buat qwizzz")
+                }
+            } catch (e: Exception) {
+                Log.e(ContentValues.TAG, "Error checking title: ${e.message}")
+                onResult(false, e.message)
+            }
+        }
+    }
+
 }
 
 sealed class QwizzzState {

@@ -58,6 +58,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
+import com.example.qwizz.component.AlertPerubahan
 import com.example.qwizz.component.CountDownTimer
 import com.example.qwizz.component.TitleComponent
 import com.example.qwizz.data.model.AnswerOption
@@ -107,6 +108,49 @@ fun MainQwizzz(
 
 
     var stackAnswer = remember { mutableStateListOf<AnswerOption>() }
+
+    var showDialogBack by remember { mutableStateOf(false) }
+    var showDialogSubmit by remember { mutableStateOf(false) }
+
+    if (showDialogBack){
+        AlertPerubahan(
+            title = "Peringatan",
+            text = "Apakah anda yakin ingin keluar?",
+            onDismiss = {
+                showDialogBack = false
+            },
+            onConfirm = {
+                showDialogBack = false
+                navController.navigate(Screen.mainMenu.route) {
+                    popUpTo(0) {
+                        inclusive = true
+                    }
+                }
+            }
+        )
+    }
+
+    if (showDialogSubmit){
+        AlertPerubahan(
+            title = "Peringatan",
+            text = "Soal belum selesai, apakah anda yakin ingin submit?",
+            onDismiss = {
+                showDialogSubmit = false
+            },
+            onConfirm = {
+                showDialogSubmit = false
+                score = qwizzzVM.countScore(stackAnswer)
+                qwizzzVM.addScore(score)
+                navController.navigate(Screen.hasilAkhir.route + "/${score}"){
+                    popUpTo(Screen.searchSelectQwizzz.route){
+                        inclusive = false
+                    }
+                    launchSingleTop = true
+                }
+
+            }
+        )
+    }
 
     LaunchedEffect(currentQuestionIndex) {
         Log.d(TAG, "LaunchedEffect triggered")
@@ -165,7 +209,7 @@ fun MainQwizzz(
                         modifier = Modifier
                             .size(22.dp)
                             .clickable {
-//                                checkBackEmpty()
+                                showDialogBack = true
                             }
                     )
                     Text(
@@ -420,15 +464,21 @@ fun MainQwizzz(
                                     ),
                                     onClick = {
                                         Log.d(TAG, "Submit Button Clicked")
-                                        score = qwizzzVM.countScore(stackAnswer)
-                                        qwizzzVM.addScore(score)
-                                        navController.navigate(Screen.hasilAkhir.route + "/${score}"){
-                                            popUpTo(Screen.searchSelectQwizzz.route){
-                                                inclusive = false
-                                            }
-                                            launchSingleTop = true
-                                        }
+                                        val hasEmptyAnswer = stackAnswer.any { it.text.isEmpty() }
+                                        if (hasEmptyAnswer) {
+                                            showDialogSubmit = true
+                                            return@Button
+                                        }else{
 
+                                            score = qwizzzVM.countScore(stackAnswer)
+                                            qwizzzVM.addScore(score)
+                                            navController.navigate(Screen.hasilAkhir.route + "/${score}"){
+                                                popUpTo(Screen.searchSelectQwizzz.route){
+                                                    inclusive = false
+                                                }
+                                                launchSingleTop = true
+                                            }
+                                        }
                                     },
                                     enabled = stackAnswer.size == questionSize
 

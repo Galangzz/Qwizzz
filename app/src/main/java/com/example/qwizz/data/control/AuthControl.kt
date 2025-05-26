@@ -42,6 +42,15 @@ class AuthControl {
 
         }
     }
+    suspend fun checkUserName(username: String): Boolean {
+        return try {
+            val querySnapshot = usersCollection.whereEqualTo("name", username).get().await()
+            querySnapshot.isEmpty
+        } catch (e: Exception) {
+            Log.e("AuthController", "Error checking username", e)
+            false
+        }
+    }
 
     suspend fun getCurrentUser(): User? {
         val currentUser = auth.currentUser ?: return null

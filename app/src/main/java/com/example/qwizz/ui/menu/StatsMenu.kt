@@ -1,5 +1,6 @@
 package com.example.qwizz.ui.menu
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -60,11 +60,12 @@ import com.example.qwizz.viewmodel.auth.AuthViewModel
 import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
 import com.example.qwizz.viewmodel.stats.StatsViewModel
 import com.google.firebase.auth.FirebaseAuth
+import java.util.Locale
 
-@Preview(showBackground = true)
+@SuppressLint("DefaultLocale")
 @Composable
 fun StatsMenu(
-    navController: NavController = rememberNavController(),
+    navController: NavController = rememberNavController()
 ) {
     val context = LocalContext.current
     val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(context))
@@ -86,7 +87,6 @@ fun StatsMenu(
 
     val mathScore = userStats?.mathscore
     val listMathScore: List<Double> = mathScore ?: emptyList()
-    Log.d("StatsMenu", "listMathScore: $listMathScore")
     val bahasaScore = userStats?.bahasascore
     val listBahasaScore: List<Double> = bahasaScore ?: emptyList()
 
@@ -97,8 +97,8 @@ fun StatsMenu(
     val rataRataBahasa = listBahasaScore.average()
 
     val totalSoalDikerjakan: Int = math + bahasa
-    val rataRataNilaiMath: Double = String.format( "%.2f", if (math > 0) rataRataMath else 0.0).toDouble()
-    val rataRataNilaiBahasa: Double = String.format( "%.2f", if (bahasa > 0) rataRataBahasa else 0.0).toDouble()
+    val rataRataNilaiMath: Double = String.format(Locale.US, "%.2f", if (math > 0) rataRataMath else 0.0).toDouble()
+    val rataRataNilaiBahasa: Double = String.format(Locale.US, "%.2f", if (bahasa > 0) rataRataBahasa else 0.0).toDouble()
 
     val user = FirebaseAuth.getInstance().currentUser
     Log.d("StatsMenu", "User email: ${user?.email}")
@@ -115,6 +115,7 @@ fun StatsMenu(
     LaunchedEffect(Unit) {
         Log.d("StatsMenu", "LaunchedEffect called")
         userStatsViewModel.getDataUser(user?.uid ?: "")
+        Log.d("StatsMenu", "listMathScore: $listMathScore")
         Log.d("StatsMenu", "getDataUser called")
     }
 
@@ -269,7 +270,7 @@ fun StatsMenu(
                                 //ke db ambil nilai
 
                                 Text(
-                                    text = "Jumlah soal dikerjakan: ${totalSoalDikerjakan}",
+                                    text = "Jumlah soal dikerjakan: $totalSoalDikerjakan",
                                     fontFamily = roboto,
                                     color = colorResource(R.color.white),
                                     fontSize = 12.sp,
@@ -277,7 +278,7 @@ fun StatsMenu(
                                     modifier = Modifier.padding(10.dp)
                                 )
                                 Text(
-                                    text = "Rata-rata Matematika: ${rataRataNilaiMath}",
+                                    text = "Rata-rata Matematika: $rataRataNilaiMath",
                                     fontFamily = roboto,
                                     color = colorResource(R.color.white),
                                     fontSize = 12.sp,
@@ -285,7 +286,7 @@ fun StatsMenu(
                                     modifier = Modifier.padding(10.dp)
                                 )
                                 Text(
-                                    text = "Rata-rata Bahasa: ${rataRataNilaiBahasa}",
+                                    text = "Rata-rata Bahasa: $rataRataNilaiBahasa",
                                     fontFamily = roboto,
                                     color = colorResource(R.color.white),
                                     fontSize = 12.sp,
@@ -369,7 +370,7 @@ fun StatsMenu(
                     Button(
                         onClick = {
                             isLoading = true
-                            authViewModel.logoutUser() { success, message ->
+                            authViewModel.logoutUser { success, message ->
                                 if (success) {
                                     Log.d("StatsMenu", "Logout success")
                                     isLoading = false

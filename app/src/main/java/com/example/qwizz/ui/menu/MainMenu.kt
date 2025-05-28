@@ -202,7 +202,12 @@ fun MainMenu(
                         containerColor = colorResource(R.color.blue_card_main)
                     ),
                     onClick = {
-                        navController.navigate(Screen.StatsMenu.route)
+                        navController.navigate(Screen.StatsMenu.route){
+                            popUpTo(0) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
                     }
 
                 ){

@@ -2,9 +2,11 @@ package com.example.qwizz.data.control
 
 import android.nfc.Tag
 import android.util.Log
+import com.example.qwizz.data.model.Leaderboard
 import com.example.qwizz.data.model.QuizQuestion
 import com.example.qwizz.data.model.Qwizzz
 import com.example.qwizz.data.model.User
+import com.example.qwizz.data.model.UserStats
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -20,6 +22,7 @@ class QwizzControl {
     private val auth: FirebaseAuth = Firebase.auth
     private val qwizzzColection = firestore.collection("qwizzz")
     private val userCollection = firestore.collection("users")
+    private val leaderboardCollection = firestore.collection("leaderboard")
 
 
     suspend fun addQwizzz(id: String, topic: String, title: String, totalDetik: Int, question: List<QuizQuestion>): Boolean{
@@ -36,12 +39,42 @@ class QwizzControl {
             )
             qwizzzColection.add(qwizzz).await()
             Log.d(TAG, "Qwizzz added successfully")
-            true
+            if (!makeLeaderboard(id, title, topic)){
+                Log.e(TAG, "Error making leaderboard")
+                false
+            }else{
+                true
+            }
         }catch ( e: Exception){
             Log.e(TAG, "Error adding qwizzz", e)
             false
         }
 
+    }
+
+    suspend fun makeLeaderboard(id: String, title: String, topic: String): Boolean{
+        return try {
+            val qwizId = qwizzzColection
+                .whereEqualTo("id", id)
+                .whereEqualTo("title", title)
+                .whereEqualTo("topic", topic)
+                .limit(1)
+                .get()
+                .await()
+                .documents
+                .firstOrNull()
+                ?.id ?: return false
+            val leaderboard = Leaderboard(
+                qwizzzId = qwizId,
+                leaderboard = emptyList()
+            )
+            leaderboardCollection.add(leaderboard).await()
+            Log.d(TAG, "Leaderboard initial added successfully")
+            true
+        } catch (e: Exception){
+            Log.e(TAG, "Error making leaderboard", e)
+            false
+        }
     }
 
     suspend fun getQwizzz(): List<Qwizzz> {
@@ -131,6 +164,79 @@ class QwizzControl {
             .addOnFailureListener { e ->
                 Log.e(TAG, "Error fetching user document for user $userId", e)
             }
+    }
+
+    suspend fun updateLeaderboard(qwizzz: Qwizzz, score: Double): Boolean{
+        try{
+
+            val userId = auth.currentUser?.uid ?: return false
+            val userDocRef = userCollection.whereEqualTo("id", userId).get().await()
+            val documentSnapshot = userDocRef.documents.firstOrNull()
+
+            var username = ""
+            if (documentSnapshot != null && documentSnapshot.exists()) {
+                username = documentSnapshot.getString("name") ?: ""
+            }
+
+            val qwizId = qwizzzColection
+                .whereEqualTo("id", qwizzz.id)
+                .whereEqualTo("title", qwizzz.title)
+                .whereEqualTo("topic", qwizzz.topic)
+                .limit(1)
+                .get()
+                .await()
+                .documents
+                .firstOrNull()
+                ?.id ?: return false
+
+            val leaderboardDocRef = leaderboardCollection.whereEqualTo("qwizzzId", qwizId).get().await()
+            val leaderboardDoc = leaderboardDocRef.documents.firstOrNull()
+            if (leaderboardDoc != null && leaderboardDoc.exists()){
+                val leaderboard = leaderboardDoc.toObject(Leaderboard::class.java)
+                val updateList = leaderboard?.leaderboard?.toMutableList() ?: mutableListOf()
+                val exitingIndex = updateList.indexOfFirst { it.username == username }
+                if (exitingIndex != -1) {
+                    val exitingScore = updateList[exitingIndex].score
+                    if (score > exitingScore){
+                        updateList[exitingIndex] = UserStats(
+                            username = username,
+                            score = score
+                        )
+
+                    }
+                }else{
+                    updateList.add(UserStats(
+                        username = username,
+                        score = score
+                    ))
+
+                }
+                leaderboardCollection.document(leaderboardDoc.id).update("leaderboard", updateList).await()
+            }
+            Log.d(TAG, "Leaderboard updated successfully")
+            return true
+        } catch (e: Exception){
+            Log.e(TAG, "Error fetching title: ${e.localizedMessage}", e)
+            return false
+        }
+    }
+
+    suspend fun getLeaderboard(qwizzzId: String): List<UserStats> {
+        return try {
+            val querySnapshot = leaderboardCollection.whereEqualTo("qwizzzId", qwizzzId).get().await()
+            val leaderboardDoc = querySnapshot.documents.firstOrNull()
+            if (leaderboardDoc != null && leaderboardDoc.exists()){
+                val leaderboard = leaderboardDoc.toObject(Leaderboard::class.java)
+
+                leaderboard?.leaderboard?.sortedByDescending { it.score } ?: emptyList()
+            }else {
+                emptyList()
+            }
+
+            } catch (e: Exception){
+            Log.e(TAG, "Error fetching leaderboard: ${e.localizedMessage}", e)
+            emptyList()
+        }
     }
 
 

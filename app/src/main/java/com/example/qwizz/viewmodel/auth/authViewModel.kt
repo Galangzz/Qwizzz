@@ -66,21 +66,22 @@ class AuthViewModel(private val pref: SharedPreferences): ViewModel() {
             _authState.value = AuthState.Loading
             try {
                 val checkUsername = authControl.checkUserName(sanitizedUsername)
-                val result = authControl.registerUser(sanitizedUsername, email, password)
-                if (!checkUsername) {
+                if (checkUsername) {
+                    val result = authControl.registerUser(sanitizedUsername, email, password)
+                    if (result) {
+                        Log.d(ContentValues.TAG, "Register success email : $email")
+                        _authState.value = AuthState.Authenticated
+
+                        onResult(true, "Register success")
+                    } else {
+                        _authState.value = AuthState.Error("Register failed")
+                        onResult(false, "Register failed")
+                    }
+                } else{
                     _authState.value = AuthState.Error("Username already exists")
                     onResult(false, "Username already exists")
-                    return@launch
                 }
-                if (result) {
-                    Log.d(ContentValues.TAG, "Register success email : $email")
-                    _authState.value = AuthState.Authenticated
 
-                    onResult(true, "Register success")
-                } else {
-                    _authState.value = AuthState.Error("Register failed")
-                    onResult(false, "Register failed")
-                }
             } catch (e: Exception) {
                 Log.e(ContentValues.TAG, "Register failed: ${e.message}")
                 _authState.value = AuthState.Error(e.message ?: "Unknown error")

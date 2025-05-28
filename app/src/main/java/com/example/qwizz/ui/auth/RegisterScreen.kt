@@ -294,15 +294,6 @@ fun RegisterScreen(
                                     return@registerUser
                                 }
                                 else{
-//                                    if(message == "Email tidak boleh kosong" || message == "Format email tidak valid"){
-//                                        emailError = true
-//                                    }
-//                                    if(message == "Password tidak boleh kosong" || message == "Password minimal 8 karakter" || message == "Password harus berisi minimal 1 huruf besar, 1 huruf kecil, " + "1 angka, dan 1 karakter khusus (@#$%^&+=!)"){
-//                                        passwordError = true
-//                                    }
-//                                    if(message == "Username tidak boleh kosong" || message == "Username hanya boleh berisi huruf, angka, dan karakter . _ -" + " dengan panjang 3-20 karakter"){
-//                                        usernameError = true
-//                                    }
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show().toString()
                                     emailError = true
                                     passwordError = true

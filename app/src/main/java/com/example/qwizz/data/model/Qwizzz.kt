@@ -9,7 +9,8 @@ data class Qwizzz(
     val title: String = "",
     val createdAt: Timestamp? = null,
     val timeQuiz: Int = 0,
-    val question: List<QuizQuestion> = emptyList()
+    val question: List<QuizQuestion> = emptyList(),
+    val leaderboard: List<LeaderboardUser> = emptyList()
 )
 
 data class QuizQuestion(

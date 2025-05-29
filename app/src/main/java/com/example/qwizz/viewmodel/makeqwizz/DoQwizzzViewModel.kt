@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qwizz.data.control.QwizzControl
 import com.example.qwizz.data.model.AnswerOption
+import com.example.qwizz.data.model.LeaderboardUser
 import com.example.qwizz.data.model.Qwizzz
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,12 @@ class DoQwizzzViewModel: ViewModel() {
 
     private val _stackAnswer = MutableStateFlow<List<AnswerOption>>(emptyList())
     val stackAnswer: StateFlow<List<AnswerOption>> = _stackAnswer
+
+    private val _leaderboard = MutableStateFlow<List<LeaderboardUser>>(emptyList())
+    val leaderboard: StateFlow<List<LeaderboardUser>> = _leaderboard
+
+    private val _score = MutableStateFlow<Double>(0.0)
+    val score: StateFlow<Double> = _score
 
     private val _doQwizzzState = MutableStateFlow<DoQwizzzState>(DoQwizzzState.Initial)
     val doQwizzzState: StateFlow<DoQwizzzState> = _doQwizzzState
@@ -62,7 +69,7 @@ class DoQwizzzViewModel: ViewModel() {
         }
     }
 
-    fun countScore(userAnswer: List<AnswerOption>): Double {
+    fun countScore(userAnswer: List<AnswerOption>) {
         setAnswer(userAnswer)
         var score = 0.0
         val qwizzz = quizList.value.firstOrNull()
@@ -87,14 +94,12 @@ class DoQwizzzViewModel: ViewModel() {
             }
         }
         score = (score / correctOptionTexts.size) * 100
-//        score = String.format("%.2f", score).toDouble()
         score = BigDecimal(score).setScale(1, RoundingMode.HALF_UP).toDouble()
+        _score.value = score
         Log.d("DoQwizzzViewModel", "Score: $score")
-
-        return score
     }
 
-    fun addScore(score: Double){
+    fun addScore(){
         val qwizzz = quizList.value.firstOrNull()
         val topic = qwizzz?.topic?: ""
         val scoreKey = if (topic == "Matematika"){
@@ -108,7 +113,7 @@ class DoQwizzzViewModel: ViewModel() {
 
         viewModelScope.launch {
             try {
-                qwizzControl.updateUserScore(score, scoreKey)
+                qwizzControl.updateUserScore(score.value, scoreKey)
                 Log.d("DoQwizzzViewModel", "Score added successfully")
             } catch (e: Exception) {
                 Log.e("DoQwizzzViewModel", "Error adding score", e)
@@ -125,6 +130,35 @@ class DoQwizzzViewModel: ViewModel() {
             Log.d("DoQwizzzViewModel", "Answer: ${stackAnswer.value}")
         }catch (e: Exception){
             Log.e("DoQwizzzViewModel", "Error setting answer", e)
+        }
+    }
+
+    fun updateLeaderboard(){
+        viewModelScope.launch {
+            try {
+                val qwiz = _quizList.value.firstOrNull()
+                val idQwizzz = qwizzControl.getIdQwizzz(qwiz)
+                qwizzControl.updateLeaderboard(idQwizzz, score.value)
+                Log.d("DoQwizzzViewModel", "Leaderboard updated successfully")
+            } catch (e: Exception) {
+                Log.e("DoQwizzzViewModel", "Error updating leaderboard", e)
+            }
+        }
+    }
+
+    fun getLeaderboard(){
+        viewModelScope.launch {
+            try {
+                val qwiz = _quizList.value.firstOrNull()
+                val idQwizzz = qwizzControl.getIdQwizzz(qwiz)
+                val result = qwizzControl.getLeaderboard(idQwizzz)
+                _leaderboard.value = result
+                Log.d("DoQwizzzViewModel", "Leaderboard fetched successfully")
+                Log.d("DoQwizzzViewModel", "Leaderboard: ${leaderboard.value}")
+            } catch (e: Exception) {
+                Log.e("DoQwizzzViewModel", "Error getting leaderboard", e)
+                _leaderboard.value = emptyList()
+            }
         }
     }
 

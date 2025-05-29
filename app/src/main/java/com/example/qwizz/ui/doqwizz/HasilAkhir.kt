@@ -1,5 +1,6 @@
 package com.example.qwizz.ui.doqwizz
 
+import android.graphics.drawable.Icon
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -56,12 +57,12 @@ import kotlin.math.roundToInt
 fun HasilAkhir(
     navController: NavController = rememberNavController(),
     viewModel: DoQwizzzViewModel = viewModel(),
-    score: Double? = 0.0
 ) {
     val qwizzzList by viewModel.quizList.collectAsState()
-    val qwizzz = remember (qwizzzList) {
+    val qwizzz = remember(qwizzzList) {
         qwizzzList.firstOrNull() ?: Qwizzz()
     }
+    val scores by viewModel.score.collectAsState()
 
     val roboto = FontFamily(
         Font(R.font.roboto_reguler, FontWeight.Normal),
@@ -76,10 +77,11 @@ fun HasilAkhir(
     val backIcon = painterResource(R.drawable.back_icon)
     val reviewIcon = painterResource(R.drawable.reviewicon)
     val home = painterResource(R.drawable.home)
+    val rank = painterResource(R.drawable.rank)
 
-    var benar = ((score ?: 0.0) / 100.0 * qwizzz.question.size).roundToInt()
+    var benar = (scores / 100.0 * qwizzz.question.size).roundToInt()
     var salah: Int = qwizzz.question.size - benar
-    Log.d("HasilAkhir", "score : $score")
+    Log.d("HasilAkhir", "score : $scores")
     Log.d("HasilAkhir", "benar: $benar")
     Log.d("HasilAkhir", "salah: $salah")
 
@@ -183,7 +185,7 @@ fun HasilAkhir(
                     )
                     Text(
                         // TODO: fetch nilai  
-                        text = "$score",
+                        text = "$scores",
                         fontFamily = p2p,
                         style = TextStyle(
                             shadow = Shadow(
@@ -254,8 +256,8 @@ fun HasilAkhir(
 
                                     Button(
                                         onClick = {
-                                            navController.navigate(Screen.reviewQwizzz.route){
-                                                popUpTo(Screen.searchSelectQwizzz.route){
+                                            navController.navigate(Screen.reviewQwizzz.route) {
+                                                popUpTo(Screen.searchSelectQwizzz.route) {
                                                     inclusive = false
                                                 }
                                                 launchSingleTop = true
@@ -328,11 +330,52 @@ fun HasilAkhir(
                                         Text(
                                             text = "Halaman Utama",
                                             fontFamily = roboto,
+                                            fontSize = 12.sp,
                                             fontWeight = FontWeight.ExtraBold
                                         )
                                     }
                                 }
 
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 50.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    painter = rank,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .padding(end = 5.dp),
+                                )
+
+                                Button(
+                                    onClick = {
+                                       navController.navigate(Screen.leaderboard.route) {
+                                           popUpTo(Screen.searchSelectQwizzz.route) {
+                                               inclusive = false
+                                           }
+                                           launchSingleTop = true
+                                       }
+                                    },
+                                    modifier = Modifier
+                                        .padding(end = 10.dp)
+                                        .weight(0.1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colorResource(R.color.box2),
+                                        contentColor = colorResource(R.color.white)
+                                    ),
+                                    shape = RectangleShape,
+                                ) {
+                                    Text(
+                                        text = "Leaderboard",
+                                        fontFamily = roboto,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                }
                             }
                         }
 
@@ -344,7 +387,7 @@ fun HasilAkhir(
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.scrim,
                         modifier = Modifier.padding(vertical = 20.dp)
-                        )
+                    )
                 }
             }
         }

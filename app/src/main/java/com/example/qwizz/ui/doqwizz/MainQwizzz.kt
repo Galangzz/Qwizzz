@@ -77,6 +77,7 @@ fun MainQwizzz(
     val qwizzz = remember (qwizzzList) {
         qwizzzList.firstOrNull() ?: Qwizzz()
     }
+    val scores by qwizzzVM.score.collectAsState()
 
     if (qwizzz.question.isEmpty()){
         navController.navigate(Screen.mainMenu.route)
@@ -139,9 +140,9 @@ fun MainQwizzz(
             },
             onConfirm = {
                 showDialogSubmit = false
-                score = qwizzzVM.countScore(stackAnswer)
-                qwizzzVM.addScore(score)
-                navController.navigate(Screen.hasilAkhir.route + "/${score}"){
+                qwizzzVM.countScore(stackAnswer)
+                qwizzzVM.addScore()
+                navController.navigate(Screen.hasilAkhir.route){
                     popUpTo(Screen.searchSelectQwizzz.route){
                         inclusive = false
                     }
@@ -246,9 +247,9 @@ fun MainQwizzz(
                     CountDownTimer(totalTime = qwizzz.timeQuiz){
                         Log.d(TAG, "Timer finished")
                         val score = qwizzzVM.countScore(stackAnswer)
-                        qwizzzVM.addScore(score)
-                        navController.navigate(Screen.hasilAkhir.route + "/$score"){
-                            popUpTo(Screen.hasilAkhir.route){
+                        qwizzzVM.addScore()
+                        navController.navigate(Screen.hasilAkhir.route){
+                            popUpTo(Screen.searchSelectQwizzz.route){
                                 inclusive = false
                             }
                             launchSingleTop = true
@@ -470,9 +471,10 @@ fun MainQwizzz(
                                             return@Button
                                         }else{
 
-                                            score = qwizzzVM.countScore(stackAnswer)
-                                            qwizzzVM.addScore(score)
-                                            navController.navigate(Screen.hasilAkhir.route + "/${score}"){
+                                            qwizzzVM.countScore(stackAnswer)
+                                            qwizzzVM.addScore()
+                                            qwizzzVM.updateLeaderboard()
+                                            navController.navigate(Screen.hasilAkhir.route){
                                                 popUpTo(Screen.searchSelectQwizzz.route){
                                                     inclusive = false
                                                 }

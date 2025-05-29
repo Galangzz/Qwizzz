@@ -23,6 +23,7 @@ import com.example.qwizz.ui.auth.LoginScreen
 import com.example.qwizz.ui.auth.RegisterScreen
 import com.example.qwizz.ui.doqwizz.HasilAkhir
 import com.example.qwizz.ui.doqwizz.InitialDoQwizzz
+import com.example.qwizz.ui.doqwizz.Leaderboard
 import com.example.qwizz.ui.doqwizz.MainQwizzz
 import com.example.qwizz.ui.doqwizz.ReviewQwizzz
 import com.example.qwizz.ui.doqwizz.SearchSelectQwizzz
@@ -100,22 +101,20 @@ fun Navigation(){
                 ReviewQwizzz(navController = navController, viewModel)
 
             }
-            composable(
-                route = Screen.hasilAkhir.route + "/{score}",
-                arguments = listOf(
-                    navArgument("score") {
-                        type = NavType.StringType
-                        defaultValue = "0.0"
-                        nullable = true
-                    }
-                )
-            ){ backStackEntry ->
+            composable(Screen.leaderboard.route){ backStackEntry ->
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(Screen.searchSelectQwizzz.route)
                 }
                 val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
-                val score = backStackEntry.arguments?.getString("score")?.toDoubleOrNull() ?: 0.0
-                HasilAkhir(navController = navController, viewModel, score)
+                Log.d("Navigation", "leaderboard")
+                Leaderboard(navController = navController, viewModel)
+            }
+            composable(route = Screen.hasilAkhir.route){ backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(Screen.searchSelectQwizzz.route)
+                }
+                val viewModel: DoQwizzzViewModel = viewModel(parentEntry)
+                HasilAkhir(navController = navController, viewModel)
             }
             composable(
                 route = Screen.inputQuestion.route + "/{topic}/{title}",

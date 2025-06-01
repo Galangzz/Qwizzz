@@ -56,13 +56,9 @@ fun Leaderboard(
     qwizzzVM: DoQwizzzViewModel = viewModel()
 ) {
     val leaderboardList by qwizzzVM.leaderboard.collectAsState()
-//    val leaderboard = remember(leaderboardList) {
-//        leaderboardList.firstOrNull() ?: LeaderboardUser()
-//    }
-    val qwizzz by qwizzzVM.quizList.collectAsState()
-    val quiz = remember(qwizzz) {
-        qwizzz.firstOrNull() ?: Qwizzz()
-    }
+
+    val quiz by qwizzzVM.currentQwizzz.collectAsState()
+
 
     val draw = painterResource(R.drawable.bg)
     val backIcon = painterResource(R.drawable.back_icon)
@@ -73,7 +69,7 @@ fun Leaderboard(
     )
     LaunchedEffect(Unit) {
         Log.d(TAG, "LaunchedEffect triggered")
-        qwizzzVM.getLeaderboard()
+        qwizzzVM.observeCurrentQwizzz()
         Log.d(TAG, "Leaderboard: $leaderboardList")
     }
 
@@ -121,7 +117,7 @@ fun Leaderboard(
                     )
                     Text(
                         // TODO: Judul Qwizzz
-                        text = quiz.title,
+                        text = quiz?.title ?: "",
                         fontFamily = roboto,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
@@ -165,8 +161,6 @@ fun Leaderboard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp),
-                            horizontalAlignment = Alignment.Start,
-                            verticalArrangement = Arrangement.Center
                         ) {
                             itemsIndexed(leaderboardList) { index, leaderboard ->
                                 Row(

@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,11 +59,9 @@ fun ReviewQwizzz(
     navController: NavController = rememberNavController(),
     qwizzzVM: DoQwizzzViewModel = viewModel()
 ) {
-    val qwizzzList by qwizzzVM.quizList.collectAsState()
+    val qwizzz by qwizzzVM.currentQwizzz.collectAsState()
     val stackAnswer by qwizzzVM.stackAnswer.collectAsState()
-    val qwizzz = remember(qwizzzList) {
-        qwizzzList.firstOrNull() ?: Qwizzz()
-    }
+
 
 
     val draw = painterResource(R.drawable.bg)
@@ -128,7 +128,7 @@ fun ReviewQwizzz(
                     )
                     Text(
                         // TODO: Judul Qwizzz
-                        text = qwizzz.title,
+                        text = qwizzz?.title ?: "",
                         fontFamily = roboto,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
@@ -156,7 +156,7 @@ fun ReviewQwizzz(
                             .fillMaxWidth()
                             .padding(vertical = 10.dp)
                     ) {
-                        itemsIndexed(qwizzz.question) { index, question ->
+                        itemsIndexed(qwizzz?.question ?: emptyList()) { index, question ->
                             val userAnswer = stackAnswer.getOrNull(index)
                             Card(
                                 modifier = Modifier
@@ -180,7 +180,7 @@ fun ReviewQwizzz(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 10.dp)
+                                            .padding(10.dp)
                                             .background(
                                                 color = colorResource(R.color.teal_200),
                                                 shape = RectangleShape
@@ -198,6 +198,11 @@ fun ReviewQwizzz(
                                             textAlign = TextAlign.Center,
                                         )
                                     }
+                                    Spacer(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(10.dp)
+                                    )
 
                                     question.options.forEach { option ->
                                         val isSelected = option.text == userAnswer?.text
@@ -214,7 +219,7 @@ fun ReviewQwizzz(
                                         Card(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(10.dp),
+                                                .padding(horizontal = 10.dp, vertical = 3.dp),
                                             colors = CardDefaults.cardColors(
                                                 containerColor = backgroundColor
                                             ),

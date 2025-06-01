@@ -25,11 +25,13 @@ class EditQwizzzViewModel : ViewModel() {
     val currentQwizzz: StateFlow<Qwizzz?> = _currentQwizzz
 
     init {
+        Log.d("EditQwizzzViewModel", "ViewModel initialized")
         observeQuizList()
     }
 
     private fun observeQuizList() {
         viewModelScope.launch {
+            Log.d("EditQwizzzViewModel", "Observing quiz list")
             qwizzControl.observeQwizzz()
                 .collect { qwizzz ->
                     _quizList.value = qwizzz.sortedBy { it.title }

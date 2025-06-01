@@ -1,12 +1,14 @@
 package com.example.qwizz.viewmodel.makeqwizz
 
 import android.util.Log
+import androidx.compose.runtime.currentRecomposeScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.qwizz.data.control.QwizzControl
 import com.example.qwizz.data.model.AnswerOption
 import com.example.qwizz.data.model.LeaderboardUser
 import com.example.qwizz.data.model.Qwizzz
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,12 +27,34 @@ class DoQwizzzViewModel: ViewModel() {
     private val _leaderboard = MutableStateFlow<List<LeaderboardUser>>(emptyList())
     val leaderboard: StateFlow<List<LeaderboardUser>> = _leaderboard
 
+    private val _currentQwizzz = MutableStateFlow<Qwizzz?>(null)
+    val currentQwizzz: StateFlow<Qwizzz?> = _currentQwizzz
+
     private val _score = MutableStateFlow<Double>(0.0)
     val score: StateFlow<Double> = _score
 
     private val _doQwizzzState = MutableStateFlow<DoQwizzzState>(DoQwizzzState.Initial)
     val doQwizzzState: StateFlow<DoQwizzzState> = _doQwizzzState
 
+    init {
+        Log.d("DoQwizzzViewModel", "ViewModel initialized")
+        observeCurrentQwizzz()
+    }
+
+    fun observeCurrentQwizzz() {
+        viewModelScope.launch {
+            val id = qwizzControl.getIdQwizzz(currentQwizzz.value)
+            if (id.isNotEmpty()){
+                qwizzControl.observeCurrentQwizzz(id)
+                    .collect { qwizzz ->
+//                        _currentQwizzz.value = qwizzz
+                        _leaderboard.value = qwizzz.leaderboard.sortedByDescending { it.score }
+                        Log.d("DoQwizzzViewModel", "Current qwizzz updated: $qwizzz")
+                        Log.d("DoQwizzzViewModel", "Leaderboard: ${leaderboard.value.size}")
+                    }
+            }
+        }
+    }
 
     fun fetchQuizzes() {
         Log.d("DoQwizzzViewModel", "Fetching quizzes...")
@@ -60,9 +84,9 @@ class DoQwizzzViewModel: ViewModel() {
     fun updateCurrentQwizzz(qwizzz: Qwizzz) {
         viewModelScope.launch {
             try {
-                _quizList.value = listOf(qwizzz)
+                _currentQwizzz.value = qwizzz
                 _doQwizzzState.value = DoQwizzzState.QwizzzSaved
-                Log.d("DoQwizzzViewModel", "Qwizzz updated successfully: $qwizzz")
+                Log.d("DoQwizzzViewModel", "Current qwizzz updated successfully")
             } catch (e: Exception) {
                 _doQwizzzState.value = DoQwizzzState.Error(e.localizedMessage ?: "Unknown error")
             }
@@ -72,7 +96,7 @@ class DoQwizzzViewModel: ViewModel() {
     fun countScore(userAnswer: List<AnswerOption>) {
         setAnswer(userAnswer)
         var score = 0.0
-        val qwizzz = quizList.value.firstOrNull()
+        val qwizzz = currentQwizzz.value
         val correctOptionUser = mutableListOf<String>()
         val correctOptionTexts = mutableListOf<String>()
         qwizzz?.question?.forEach { quizQuestion ->
@@ -136,7 +160,7 @@ class DoQwizzzViewModel: ViewModel() {
     fun updateLeaderboard(){
         viewModelScope.launch {
             try {
-                val qwiz = _quizList.value.firstOrNull()
+                val qwiz = currentQwizzz.value
                 val idQwizzz = qwizzControl.getIdQwizzz(qwiz)
                 qwizzControl.updateLeaderboard(idQwizzz, score.value)
                 Log.d("DoQwizzzViewModel", "Leaderboard updated successfully")
@@ -146,21 +170,19 @@ class DoQwizzzViewModel: ViewModel() {
         }
     }
 
-    fun getLeaderboard(){
-        viewModelScope.launch {
-            try {
-                val qwiz = _quizList.value.firstOrNull()
-                val idQwizzz = qwizzControl.getIdQwizzz(qwiz)
-                val result = qwizzControl.getLeaderboard(idQwizzz)
-                _leaderboard.value = result
-                Log.d("DoQwizzzViewModel", "Leaderboard fetched successfully")
-                Log.d("DoQwizzzViewModel", "Leaderboard: ${leaderboard.value}")
-            } catch (e: Exception) {
-                Log.e("DoQwizzzViewModel", "Error getting leaderboard", e)
-                _leaderboard.value = emptyList()
-            }
-        }
-    }
+//    fun getLeaderboard(){
+//        viewModelScope.launch {
+//            try {
+//                val qwiz = currentQwizzz.value
+//                val leaderboard = qwiz?.leaderboard
+//                _leaderboard.value = leaderboard ?: emptyList()
+//                Log.d("DoQwizzzViewModel", "Leaderboard: ${leaderboard?.size}")
+//            } catch (e: Exception) {
+//                Log.e("DoQwizzzViewModel", "Error getting leaderboard", e)
+//                _leaderboard.value = emptyList()
+//            }
+//        }
+//    }
 
 
 

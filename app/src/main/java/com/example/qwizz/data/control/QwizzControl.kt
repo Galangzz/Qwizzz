@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
@@ -234,7 +235,7 @@ class QwizzControl {
         }
     }
 
-    suspend fun observeQwizzz(): Flow<List<Qwizzz>> = callbackFlow {
+     fun observeQwizzz(): Flow<List<Qwizzz>> = callbackFlow {
         val listener = qwizzzColection.whereEqualTo("id", auth.currentUser?.uid)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -244,6 +245,25 @@ class QwizzControl {
 
                 val qwizzzList = snapshot?.toObjects(Qwizzz::class.java) ?: emptyList()
                 trySend(qwizzzList)
+            }
+
+        awaitClose {
+            listener.remove()
+        }
+    }
+
+    fun observeCurrentQwizzz(qwizzzId: String): Flow<Qwizzz> = callbackFlow {
+        val listener = qwizzzColection
+            .document(qwizzzId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val qwizzz = snapshot?.toObject(Qwizzz::class.java)
+                if (qwizzz != null) {
+                    trySend(qwizzz)
+                }
             }
 
         awaitClose {

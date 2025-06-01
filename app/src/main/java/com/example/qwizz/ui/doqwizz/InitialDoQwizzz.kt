@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,10 +63,10 @@ fun InitialDoQwizzz(
     navController: NavController = rememberNavController(),
     viewModel: DoQwizzzViewModel = viewModel()
 ){
-    val qwizzzList by viewModel.quizList.collectAsState()
-    val qwizzz = remember (qwizzzList) {
-        qwizzzList.firstOrNull() ?: Qwizzz()
-    }
+    val qwizzz by viewModel.currentQwizzz.collectAsState()
+//    val qwizzz = remember (qwizzzList) {
+//        qwizzzList.firstOrNull() ?: Qwizzz()
+//    }
     Log.d("InitialDoQwizzz", "Qwizzz: $qwizzz")
     val draw = painterResource(R.drawable.bg)
     val backIcon = painterResource(R.drawable.back_icon)
@@ -75,20 +76,26 @@ fun InitialDoQwizzz(
         Font(R.font.roboto_ligh, FontWeight.ExtraLight),
         Font(R.font.roboto_reguler, FontWeight.Normal)
     )
-    val time = qwizzz.timeQuiz
+    val time = qwizzz?.timeQuiz
     val duration =
-        if (time > 60){
-            val minutes = time / 60
-            val seconds = time % 60
-            "$minutes Menit $seconds Detik"
-        }else{
-            "$time Detik"
+        time?.let {
+            if (it > 60){
+                val minutes = time / 60
+                val seconds = time % 60
+                "$minutes Menit $seconds Detik"
+            }else{
+                "$time Detik"
+            }
         }
     val scope = rememberCoroutineScope()
 
-    val totalSoal = qwizzz.question.size
+    val totalSoal = qwizzz?.question?.size
 
     var isLoading by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        Log.d("InitialDoQwizzz", "LaunchedEffect called")
+
+    }
 
     BackHandler(enabled = true) {
         navController.navigate(Screen.searchSelectQwizzz.route){
@@ -174,14 +181,14 @@ fun InitialDoQwizzz(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = qwizzz.title,
+                                text = qwizzz?.title ?: "",
                                 fontFamily = roboto,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.white),
                                 modifier = Modifier.padding(bottom = 10.dp)
                             )
                             Text(
-                                text = qwizzz.topic,
+                                text = qwizzz?.topic ?: "",
                                 fontFamily = roboto,
                                 fontWeight = FontWeight.Normal,
                                 color = colorResource(R.color.white),
@@ -195,7 +202,7 @@ fun InitialDoQwizzz(
                                 modifier = Modifier.padding(bottom = 10.dp)
                             )
                             Text(
-                                text = duration,
+                                text = duration.toString(),
                                 fontFamily = roboto,
                                 fontWeight = FontWeight.Normal,
                                 color = colorResource(R.color.black),
@@ -214,7 +221,7 @@ fun InitialDoQwizzz(
                                                 }
                                                 launchSingleTop = true
                                             }
-                                            delay(3000)
+                                            delay(1000)
                                             isLoading = false
                                         }
                                     }

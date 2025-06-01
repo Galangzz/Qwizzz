@@ -58,10 +58,7 @@ fun HasilAkhir(
     navController: NavController = rememberNavController(),
     viewModel: DoQwizzzViewModel = viewModel(),
 ) {
-    val qwizzzList by viewModel.quizList.collectAsState()
-    val qwizzz = remember(qwizzzList) {
-        qwizzzList.firstOrNull() ?: Qwizzz()
-    }
+    val qwizzz by viewModel.currentQwizzz.collectAsState()
     val scores by viewModel.score.collectAsState()
 
     val roboto = FontFamily(
@@ -79,8 +76,8 @@ fun HasilAkhir(
     val home = painterResource(R.drawable.home)
     val rank = painterResource(R.drawable.rank)
 
-    var benar = (scores / 100.0 * qwizzz.question.size).roundToInt()
-    var salah: Int = qwizzz.question.size - benar
+    var benar = (scores / 100.0 * (qwizzz?.question?.size ?: 0)).roundToInt()
+    var salah: Int = qwizzz?.question?.size?.minus(benar) ?: 0
     Log.d("HasilAkhir", "score : $scores")
     Log.d("HasilAkhir", "benar: $benar")
     Log.d("HasilAkhir", "salah: $salah")
@@ -98,6 +95,7 @@ fun HasilAkhir(
 
     LaunchedEffect(Unit) {
         Log.d("HasilAkhir", "LaunchedEffect triggered")
+        viewModel.observeCurrentQwizzz()
     }
 
     Surface(
@@ -146,7 +144,7 @@ fun HasilAkhir(
                             }
                     )
                     Text(
-                        text = qwizzz.title,
+                        text = qwizzz?.title ?: "",
                         fontFamily = roboto,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,

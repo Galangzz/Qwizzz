@@ -73,17 +73,15 @@ fun MainQwizzz(
     qwizzzVM: DoQwizzzViewModel = viewModel()
 ){
 
-    val qwizzzList by qwizzzVM.quizList.collectAsState()
-    val qwizzz = remember (qwizzzList) {
-        qwizzzList.firstOrNull() ?: Qwizzz()
-    }
+    val qwizzz by qwizzzVM.currentQwizzz.collectAsState()
+
     val scores by qwizzzVM.score.collectAsState()
 
-    if (qwizzz.question.isEmpty()){
+    if (qwizzz?.question?.isEmpty() == true ){
         navController.navigate(Screen.mainMenu.route)
     }else{
         Log.d(TAG, "MainQwizzz: $qwizzz")
-        Log.d(TAG, "MainQwizzz: ${qwizzz.timeQuiz}")
+        Log.d(TAG, "MainQwizzz: ${qwizzz?.timeQuiz}")
     }
 
     val draw = painterResource(R.drawable.bg)
@@ -94,9 +92,9 @@ fun MainQwizzz(
         Font(R.font.roboto_ligh, FontWeight.ExtraLight),
         Font(R.font.roboto_reguler, FontWeight.Normal)
     )
-    val title = qwizzz.title.toString()
+    val title = qwizzz?.title.toString()
 
-    val questionSize = qwizzz.question.size
+    val questionSize = qwizzz?.question?.size
     var currentQuestionIndex by remember { mutableIntStateOf(0) }
 
     var currentQuestionText by remember { mutableStateOf("") }
@@ -157,17 +155,17 @@ fun MainQwizzz(
         Log.d(TAG, "LaunchedEffect triggered")
         Log.d(TAG, "Current Question Index: $currentQuestionIndex")
         Log.d(TAG, "Question Size: $questionSize")
-        val currentQ = qwizzz.question[currentQuestionIndex]
-        currentQuestionText = currentQ.questionText
-        answerOption1 = currentQ.options[0].text
-        answerOption2 = currentQ.options[1].text
-        answerOption3 = currentQ.options[2].text
-        answerOption4 = currentQ.options[3].text
+        val currentQ = qwizzz?.question[currentQuestionIndex]
+        currentQuestionText = currentQ?.questionText ?: ""
+        answerOption1 = currentQ?.options[0]?.text ?: ""
+        answerOption2 = currentQ?.options[1]?.text ?: ""
+        answerOption3 = currentQ?.options[2]?.text ?: ""
+        answerOption4 = currentQ?.options[3]?.text ?: ""
 
-        while (stackAnswer.size < questionSize) {
+        while (stackAnswer.size < questionSize!!) {
             stackAnswer.add(AnswerOption("", false))
         }
-        Log.d(TAG, "Qwizz Size: ${qwizzz.question.size}")
+        Log.d(TAG, "Qwizz Size: ${qwizzz!!.question.size}")
         Log.d(TAG, "Stack size: ${stackAnswer.size}")
         Log.d(TAG, "Current Question: $currentQuestionText")
     }
@@ -244,7 +242,7 @@ fun MainQwizzz(
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     //timer
-                    CountDownTimer(totalTime = qwizzz.timeQuiz){
+                    CountDownTimer(totalTime = qwizzz?.timeQuiz ?: 0){
                         Log.d(TAG, "Timer finished")
                         val score = qwizzzVM.countScore(stackAnswer)
                         qwizzzVM.addScore()
@@ -507,7 +505,7 @@ fun MainQwizzz(
                                         currentQuestionIndex++
 
                                     },
-                                    enabled = currentQuestionIndex < questionSize - 1
+                                    enabled = currentQuestionIndex < questionSize!! - 1
 
                                     ){
                                     Text(

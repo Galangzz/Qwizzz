@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.qwizz.R
 import com.example.qwizz.Screen
 import com.example.qwizz.component.InputTitleQwiz
@@ -44,7 +45,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun MainMenu(
-    navController: NavController,
+    navController: NavController = rememberNavController(),
 ){
     val auth = FirebaseAuth.getInstance()
     val authUser = auth.currentUser

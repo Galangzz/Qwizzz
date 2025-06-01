@@ -146,7 +146,6 @@ fun HasilAkhir(
                             }
                     )
                     Text(
-                        // TODO: Judul Qwizzz
                         text = qwizzz.title,
                         fontFamily = roboto,
                         fontWeight = FontWeight.Bold,

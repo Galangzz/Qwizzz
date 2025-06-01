@@ -3,6 +3,7 @@ package com.example.qwizz.component
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -39,7 +41,8 @@ fun CardQwizzz(
     duration: String,
     author: String,
     image: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
     val roboto = FontFamily(
         Font(R.font.roboto_bold, FontWeight.ExtraBold),
@@ -54,14 +57,24 @@ fun CardQwizzz(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
+            .pointerInput(Unit){
+                detectTapGestures(
+                    onTap = {
+                        onClick()
+                    },
+                    onLongPress = {
+                        onLongClick()
+                    }
+                )
+            }
             .border(
                 1.dp,
                 color = colorResource(R.color.black_shadow),
                 shape = RoundedCornerShape(20.dp)
-            )
-            .clickable(
-                onClick = onClick
             ),
+//            .clickable(
+//                onClick = onClick
+//            ),
         colors = CardDefaults.cardColors(
             containerColor = colorResource(R.color.blue_card_main)
         ),

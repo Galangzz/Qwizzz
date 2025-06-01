@@ -118,7 +118,7 @@ fun ReviewQwizzz(
                         modifier = Modifier
                             .size(22.dp)
                             .clickable {
-                                navController.navigate(Screen.searchSelectQwizzz.route) {
+                                navController.navigate(Screen.hasilAkhir.route) {
                                     popUpTo(Screen.searchSelectQwizzz.route) {
                                         inclusive = false
                                     }

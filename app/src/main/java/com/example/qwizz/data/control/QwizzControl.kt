@@ -11,6 +11,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 private const val TAG = "QwizzControl"
@@ -43,6 +46,30 @@ class QwizzControl {
             false
         }
 
+    }
+
+    suspend fun getQwizzzAvailable(): List<Qwizzz> {
+        return try {
+            val userId = auth.currentUser?.uid ?: return emptyList()
+            val userDocRef = qwizzzColection
+                .whereEqualTo("id", userId)
+            val querySnapshot = userDocRef.get().await()
+            Log.d(TAG, "Fetched ${querySnapshot.size()} qwizzz documents")
+            querySnapshot.documents.mapNotNull { doc ->
+                try {
+                    doc.toObject(Qwizzz::class.java)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error mapping document to Qwizzz: ${doc.id}", e)
+                    null
+                }
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching qwizzz: ${e.localizedMessage}", e)
+            emptyList()
+        } finally {
+            Log.d(TAG, "Fetching qwizzz completed")
+        }
     }
 
 
@@ -193,6 +220,45 @@ class QwizzControl {
             } catch (e: Exception){
             Log.e(TAG, "Error fetching leaderboard: ${e.localizedMessage}", e)
             emptyList()
+        }
+    }
+
+    suspend fun deleteQwizzzById(qwizzzId: String): Boolean {
+        return try {
+            qwizzzColection.document(qwizzzId).delete().await()
+            Log.d(TAG, "Qwizzz deleted successfully")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting qwizzz: ${e.localizedMessage}", e)
+            false
+        }
+    }
+
+    suspend fun observeQwizzz(): Flow<List<Qwizzz>> = callbackFlow {
+        val listener = qwizzzColection.whereEqualTo("id", auth.currentUser?.uid)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val qwizzzList = snapshot?.toObjects(Qwizzz::class.java) ?: emptyList()
+                trySend(qwizzzList)
+            }
+
+        awaitClose {
+            listener.remove()
+        }
+    }
+
+    suspend fun updateQwizzz(id: String, qwizzz: Qwizzz): Boolean {
+        return try {
+            qwizzzColection.document(id).set(qwizzz).await()
+            Log.d(TAG, "Qwizzz updated successfully")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating qwizzz: ${e.localizedMessage}", e)
+            false
         }
     }
 

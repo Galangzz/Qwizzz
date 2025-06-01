@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -27,7 +29,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -68,6 +73,7 @@ fun SelectTopic(
     val bahasaIcon = painterResource(R.drawable.bahasa_select_qwizz_icon)
     val draw = painterResource(R.drawable.bg)
     val backicon = painterResource(R.drawable.back_icon)
+    val edit = painterResource(R.drawable.editsoal)
 
     val context = LocalContext.current
 
@@ -288,6 +294,51 @@ fun SelectTopic(
 
                                 )
                         }
+                    }
+
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Image(
+                            painter = edit,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(end = 5.dp),
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                        )
+                        Button(
+                            onClick = {
+                                /*TODO*/
+                                navController.navigate(Screen.editAvailableQwizzz.route){
+                                    popUpTo(0){
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(end = 10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorResource(R.color.box2),
+                                contentColor = colorResource(R.color.white)
+                            ),
+                            shape = RectangleShape
+                        ) {
+                            Text(
+                                text = "Edit Qwizzz",
+                                fontFamily = presstart2P,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
                     }
 
 

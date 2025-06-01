@@ -27,12 +27,15 @@ import com.example.qwizz.ui.doqwizz.Leaderboard
 import com.example.qwizz.ui.doqwizz.MainQwizzz
 import com.example.qwizz.ui.doqwizz.ReviewQwizzz
 import com.example.qwizz.ui.doqwizz.SearchSelectQwizzz
+import com.example.qwizz.ui.editqwizz.EditAvailableQwizzz
+import com.example.qwizz.ui.editqwizz.EditQwizzz
 import com.example.qwizz.ui.makeqwizz.InputQuestion
 import com.example.qwizz.ui.makeqwizz.SelectTopic
 import com.example.qwizz.ui.menu.MainMenu
 import com.example.qwizz.ui.menu.StatsMenu
 import com.example.qwizz.viewmodel.auth.AuthViewModel
 import com.example.qwizz.viewmodel.auth.AuthViewModelFactory
+import com.example.qwizz.viewmodel.editqwizz.EditQwizzzViewModel
 import com.example.qwizz.viewmodel.makeqwizz.DoQwizzzViewModel
 import kotlinx.coroutines.delay
 
@@ -74,6 +77,16 @@ fun Navigation(){
             }
             composable(Screen.initialDoQwizzz.route){
                 InitialDoQwizzz(navController = navController)
+            }
+            composable(Screen.editAvailableQwizzz.route){
+                EditAvailableQwizzz(navController = navController)
+            }
+            composable(Screen.editQwizzz.route){
+                val parentEntry = remember(it) {
+                    navController.getBackStackEntry(Screen.editAvailableQwizzz.route)
+                }
+                val viewModel: EditQwizzzViewModel = viewModel(parentEntry)
+                EditQwizzz(navController = navController, viewModel)
             }
 
             composable(Screen.initialDoQwizzz.route){

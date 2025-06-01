@@ -229,6 +229,9 @@ fun SearchSelectQwizzz(
                                             }
                                             launchSingleTop = true
                                         }
+                                    },
+                                    onLongClick = {
+                                        Log.d("SearchSelectQwizzz", "Card long clicked")
                                     }
                                 )
                             }
